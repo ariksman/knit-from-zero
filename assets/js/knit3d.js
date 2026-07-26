@@ -93,30 +93,9 @@
     }
   }
 
-  /* ---------------------------------------------------------
-     Curl. Stockinette rolls because the loop is not symmetric
-     front to back. Rather than fake it with a bulge, we wrap
-     the edge regions around a cylinder, which is what the
-     fabric actually does — arc length is preserved, so the
-     swatch visibly gets smaller as it rolls.
-        top and bottom edges roll towards the knit side (+z)
-        the two side edges roll towards the purl side (-z)
-     --------------------------------------------------------- */
-  function roll(p, axis, edgeStart, R, dir, beyond) {
-    /* axis 0 = roll the x edges (bend about a vertical line)
-       axis 1 = roll the y edges (bend about a horizontal line) */
-    const a = p[axis];
-    const s = beyond > 0 ? a - edgeStart : edgeStart - a;
-    if (s <= 0) return p;
-    const th = Math.min(Math.PI * 1.15, s / R);
-    const rr = R - p[2] * dir;                     // keep the loop's own depth
-    const na = edgeStart + beyond * rr * Math.sin(th);
-    const nz = dir * (R - rr * Math.cos(th));
-    const out = p.slice();
-    out[axis] = na;
-    out[2] = nz;
-    return out;
-  }
+  /* Stockinette rolls because the loop is not symmetric front to
+     back: the course-wise edges roll towards the knit side and the
+     two selvedges towards the purl side. See buildYarn. */
 
   /* ---------------------------------------------------------
      Build the yarn as ONE continuous polyline snaking through
@@ -134,7 +113,10 @@
        Garter relaxes much shorter course-wise and ridges on both faces. */
     const isRib = o.variant === "rib1x1" || o.variant === "rib2x2";
     const period = o.variant === "rib1x1" ? 2 : 4;
-    const ribBack = (o.variant === "rib1x1" ? 1.55 : 1.4) * D * o.fold;
+    /* 1×1 would hide its purl wales completely at 1.9 D, but the yarn
+       cannot reverse that far over a single wale without bending tighter
+       than it is thick, so it is held to what is physically possible. */
+    const ribBack = (o.variant === "rib1x1" ? 1.15 : 1.4) * D * o.fold;
     const gapMin = o.variant === "rib1x1" ? 0.45 : 0.45;
     const isGarter = o.variant === "garter";
     const courseH = isGarter ? H * 0.65 : H;
@@ -183,18 +165,35 @@
            changeover it is — the sinker at t=0.5 is the crossing point */
         const centre = Math.round(u);
         const wale = Math.max(0, Math.min(o.wales - 1, centre));
+        /* Neighbouring wales change face at the CELL BOUNDARY, which is
+           where the sinker loop crosses (t = 0.5 → u = centre + 0.5).
+           Blend only in a narrow band either side of it, or every wale
+           gets dragged halfway towards its right-hand neighbour and the
+           corrugation loses registration with the knit/purl columns. */
         const frac = u - (centre - 0.5);            // 0..1 across the cell
-        const blend = smooth(Math.max(0, Math.min(1, (frac - 0.4) / 0.2)));
-        const here = purlAt(wale, j) ? -1 : 1;
-        const next = purlAt(Math.min(o.wales - 1, wale + 1), j) ? -1 : 1;
-        const face = here * (1 - blend) + next * blend;
-
-        let z = stitchZ(t) * face;
-        if (isRib) {
-          const backHere = purlAt(wale, j) ? -ribBack : 0;
-          const backNext = purlAt(Math.min(o.wales - 1, wale + 1), j) ? -ribBack : 0;
-          z += backHere * (1 - blend) + backNext * blend;
+        /* Fabrics that flip face every single wale (1×1 rib, seed) have
+           to reverse the yarn's depth over half the distance, so give
+           them a wider changeover band or the yarn bends tighter than
+           it physically can. */
+        const BAND = (o.variant === "rib1x1" || o.variant === "seed") ? 0.34 : 0.16;
+        const clamp = (i) => Math.max(0, Math.min(o.wales - 1, i));
+        const faceOfWale = (i) => (purlAt(clamp(i), j) ? -1 : 1);
+        const backOfWale = (i) => (isRib && purlAt(clamp(i), j) ? -ribBack : 0);
+        let face, back;
+        if (frac < BAND) {
+          const b = smooth(0.5 + 0.5 * (frac / BAND));
+          face = faceOfWale(wale - 1) * (1 - b) + faceOfWale(wale) * b;
+          back = backOfWale(wale - 1) * (1 - b) + backOfWale(wale) * b;
+        } else if (frac > 1 - BAND) {
+          const b = smooth(0.5 * (frac - (1 - BAND)) / BAND);
+          face = faceOfWale(wale) * (1 - b) + faceOfWale(wale + 1) * b;
+          back = backOfWale(wale) * (1 - b) + backOfWale(wale + 1) * b;
+        } else {
+          face = faceOfWale(wale);
+          back = backOfWale(wale);
         }
+
+        let z = stitchZ(t) * face + back;
         if (isGarter) z += (j % 2 === 1 ? 0.6 : -0.6) * D;
 
         fine.push([remapU(u) * waleW, stitchY(t) + courseH * j, z, wale]);
@@ -219,6 +218,41 @@
       rows.push({ row, rtl: j % 2 === 1 });
     }
 
+    /* Let the swatch go, BEFORE the selvedge turns are built — roll the
+       courses first, then join their real endpoints, or the turns get
+       swept round the cylinder too and kink.
+
+       Rib and garter genuinely do not curl: their alternating faces
+       cancel the bending moments. So this only ever runs on plain. */
+    if (o.curl > 0 && (o.variant === "stockinette" || o.variant === "reverse")) {
+      const sgn = o.variant === "reverse" ? -1 : 1;
+      let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+      rows.forEach((r) => r.row.forEach((q) => {
+        if (q[0] < xMin) xMin = q[0]; if (q[0] > xMax) xMax = q[0];
+        if (q[1] < yMin) yMin = q[1]; if (q[1] > yMax) yMax = q[1];
+      }));
+      const R = Math.max(3.0, 7.5 - o.curl * 4.5) * D;
+      const inset = 6.0 * D;
+      /* Wrap each edge region around a cylinder. The two directions are
+         composed ADDITIVELY from the flat sheet — chaining them and
+         letting the second read the z the first just wrote makes the
+         four corners flare outwards instead of curling in. */
+      const arc = (a, edge, beyond) => {
+        const s = beyond > 0 ? a - edge : edge - a;
+        if (s <= 0) return [a, 0];
+        const th = Math.min(Math.PI * 0.9, s / R);
+        return [edge + beyond * R * Math.sin(th), R * (1 - Math.cos(th))];
+      };
+      rows.forEach((r) => r.row.forEach((q) => {
+        const [y1, zy1] = arc(q[1], yMax - inset, +1);   // bind-off edge
+        const [y2, zy2] = arc(y1, yMin + inset, -1);     // cast-on edge
+        const [x1, zx1] = arc(q[0], xMax - inset, +1);   // right selvedge
+        const [x2, zx2] = arc(x1, xMin + inset, -1);     // left selvedge
+        q[0] = x2; q[1] = y2;
+        q[2] = q[2] + sgn * (zy1 + zy2) - sgn * (zx1 + zx2);
+      }));
+    }
+
     /* one continuous strand, turning at alternate selvedges */
     rows.forEach((r, j) => {
       const seq = r.rtl ? r.row.slice().reverse() : r.row;
@@ -226,39 +260,36 @@
       if (j < rows.length - 1) {
         const nextSeq = rows[j + 1].rtl ? rows[j + 1].row.slice().reverse() : rows[j + 1].row;
         const a = seq[seq.length - 1], b = nextSeq[0];
-        const out = r.rtl ? -1 : 1;
-        for (let k = 1; k <= 6; k++) {
-          const t = k / 7;
-          const bulge = Math.sin(t * Math.PI) * 0.55 * D * out;
-          pts.push([
-            a[0] + (b[0] - a[0]) * t + bulge,
-            a[1] + (b[1] - a[1]) * t,
-            a[2] + (b[2] - a[2]) * t - Math.sin(t * Math.PI) * 0.35 * D,
-          ]);
+        /* A Hermite, so the turn leaves the course travelling the way the
+           yarn was already going and arrives the same way. Joining the two
+           endpoints with a plain arc puts a near right-angle at each end,
+           and the swept tube pinches there. */
+        const dirOut = [a[0] - seq[seq.length - 2][0], a[1] - seq[seq.length - 2][1], a[2] - seq[seq.length - 2][2]];
+        const dirIn = [nextSeq[1][0] - b[0], nextSeq[1][1] - b[1], nextSeq[1][2] - b[2]];
+        const norm = (v) => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
+        const span = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+        const k0 = norm(dirOut), k1 = norm(dirIn);
+        const T = span * 1.35;
+        const STEPS = 16;
+        for (let k = 1; k < STEPS; k++) {
+          const t = k / STEPS, t2 = t * t, t3 = t2 * t;
+          const h00 = 2 * t3 - 3 * t2 + 1, h10 = t3 - 2 * t2 + t;
+          const h01 = -2 * t3 + 3 * t2, h11 = t3 - t2;
+          pts.push([0, 1, 2].map((c) =>
+            h00 * a[c] + h10 * T * k0[c] + h01 * b[c] + h11 * T * k1[c]));
           own.push([-1, j]);
         }
       }
     });
 
-    /* Let the swatch go. Rib and garter genuinely do not curl — the
-       alternating faces cancel the bending moments — so this only ever
-       runs for plain fabric. */
-    if (o.curl > 0 && (o.variant === "stockinette" || o.variant === "reverse")) {
-      const sgn = o.variant === "reverse" ? -1 : 1;
-      let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
-      pts.forEach((p) => {
-        if (p[0] < xMin) xMin = p[0]; if (p[0] > xMax) xMax = p[0];
-        if (p[1] < yMin) yMin = p[1]; if (p[1] > yMax) yMax = p[1];
-      });
-      const R = Math.max(3.0, 7.5 - o.curl * 4.5) * D;
-      const inset = 6.0 * D;
-      for (let k = 0; k < pts.length; k++) {
-        let p = pts[k];
-        p = roll(p, 1, yMax - inset, R, sgn, +1);       // bind-off edge → knit side
-        p = roll(p, 1, yMin + inset, R, sgn, -1);       // cast-on edge → knit side
-        p = roll(p, 0, xMax - inset, R, -sgn, +1);      // right selvedge → purl side
-        p = roll(p, 0, xMin + inset, R, -sgn, -1);      // left selvedge → purl side
-        pts[k] = p;
+    /* The rolled edge genuinely doubles back on itself, which can leave
+       consecutive samples almost coincident. Those give the tube sweep a
+       degenerate frame, so drop them. */
+    const MINSTEP = 0.12 * D;
+    for (let k = pts.length - 2; k > 0; k--) {
+      const a = pts[k], b = pts[k + 1];
+      if (Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) < MINSTEP) {
+        pts.splice(k + 1, 1); own.splice(k + 1, 1);
       }
     }
 
