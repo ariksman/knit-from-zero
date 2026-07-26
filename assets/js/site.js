@@ -41,6 +41,7 @@
     {
       group: "Reference",
       items: [
+        { id: "r00", n: "", href: "reference/3d-models.html", title: "3D models" },
         { id: "r01", n: "", href: "reference/tools.html", title: "Calculators & counters" },
         { id: "r02", n: "", href: "reference/glossary.html", title: "Glossary & abbreviations" },
         { id: "r03", n: "", href: "reference/troubleshooting.html", title: "Troubleshooting index" },

@@ -33,7 +33,14 @@ Knitted in one piece from the collar down, in the round, with no seams: a 2×2 r
 - **Variations** — snood, leg warmers, boy-dog belly notch, hi-vis stripe
 
 ### Reference
-Gauge calculator, needle size converter, yarn weight table, wraps-per-inch identifier, yarn quantity estimator, persistent row counters, a filterable glossary, and a symptom-first troubleshooting index.
+Interactive 3D models, gauge calculator, needle size converter, yarn weight table, wraps-per-inch identifier, yarn quantity estimator, persistent row counters, a filterable glossary, and a symptom-first troubleshooting index.
+
+### The 3D models
+Knitting is a three-dimensional structure that flat diagrams have to lie about. Three things genuinely cannot be drawn flat, so they are real WebGL geometry instead — generated in the browser, not downloaded:
+
+- **One stitch and its neighbours** (lesson 1) — turn it edge-on and you can see the two legs travelling towards you while the loop they were pulled through sits behind them.
+- **Every fabric in the course** (lesson 5) — with two sliders that demonstrate mechanisms rather than illustrate them. *Relax the rib* folds the fabric without changing a single stitch, which is exactly why ribbing grips. *Let the swatch go* rolls the edges of stockinette, which is why every edge in the pattern is ribbing or garter.
+- **The dog, and the sweater on it** (the project pages) — lofted from breed-standard cross-sections, with the leg openings actually cut out of the garment surface and each pattern section colour-coded.
 
 ---
 
@@ -51,10 +58,32 @@ assets/
   js/site.js      nav, sidebar, theme, progress tracking, steppers, counters
   js/knitgraph.js procedural SVG: knitted fabric, charts, gauge swatches, schematics
   js/stitchsteps.js the two-needle "what your hands do" diagrams
-  js/dogsvg.js    the Basenji, with measurement overlays and an optional sweater
+  js/dogsvg.js    the Basenji in SVG, with measurement overlays and a sweater
   js/pattern.js   the sizing engine
   js/tools.js     the calculators
+  js/gl.js        a small hand-rolled WebGL renderer + geometry builders
+  js/knit3d.js    knitted fabric as real 3D geometry
+  js/dog3d.js     the Basenji as real 3D geometry, and the garment over it
 ```
+
+### `gl.js` — the renderer
+About 450 lines of WebGL, no three.js and no libraries at all. The scenes here need exactly one material, so vendoring 1.3 MB of engine to draw a few tens of thousands of lit triangles would have cost more than writing it.
+
+WebGL2 with a WebGL1 fallback; hemisphere ambient plus one directional light and a rim term, with every colour read from the same CSS custom properties as the page, so the models re-light themselves when you switch theme. `touch-action: pan-y` on the canvas means a one-finger vertical drag still scrolls the article while multi-touch reaches the camera. Nothing renders unless something changed, nothing renders while the model is off screen, and `webglcontextlost` is handled properly rather than leaving a dead canvas. There are keyboard controls and real buttons beside the pointer ones, because a canvas exposes nothing to a screen reader.
+
+Geometry builders: `tube()` sweeps a circular cross-section along a polyline using parallel-transport frames so the yarn never spins as the curve turns; `loft()` runs an elliptical cross-section along a spine and can omit faces to cut a hole in the result.
+
+### `knit3d.js` — fabric as geometry
+One continuous polyline snakes through every course of the swatch — because a piece of knitting *is* one continuous strand — and is then thickened into a tube.
+
+The interesting part is the loop itself, which is **not** a sine wave. A sine of this aspect ratio turns tighter at its peaks than the yarn is thick, so the tube turns inside out there and the render sprouts spikes. Real yarn cannot bend tighter than itself. So the loop is built the way yarn actually lies: a zigzag whose corners are rounded with arcs of a fixed radius comfortably larger than the yarn radius, with the nominal zigzag height chosen so that after the rounding the loop is about 1.8 course spacings tall and consecutive courses genuinely interlock.
+
+Depth is what makes the fabric a fabric: the legs sit forward and the heads and sinker loops sit back, and flipping that per course, per wale, or per checkerboard gives garter, rib and seed from the same generator. Ribbing's fold is computed by walking the wave and accumulating arc length, so the fabric gets narrower because the same length of knitting follows a longer path — which is what physically happens when you let go of a rib.
+
+### `dog3d.js` — the dog
+Lofted through nine measured cross-sections taken from the FCI and AKC breed standards. Body length exactly equals height at the withers (the Basenji is a square breed), depth of body 0.47 H, forearm 0.415 H — the number that makes the dog look leggy — and a ribcage whose cross-section is an upright oval nearly twice as deep as it is wide. Waist girth is 65% of chest girth, and that drop is the entire reason the pattern has waist shaping.
+
+The sweater is a second surface lofted over the same stations and offset outwards, with the leg openings omitted from the face list rather than painted on.
 
 ### `knitgraph.js` — drawing knitting
 Knitted fabric is drawn from stitch geometry rather than from images. `knitV()` renders one knit stitch as two curved legs meeting at a point; `purlBump()` renders the reverse face. `fabric()` tiles them according to a stitch pattern (stockinette, garter, 1×1 and 2×2 rib, seed), narrowing the purl columns in ribbing so it draws at its real relaxed width. Because it is all SVG with CSS custom properties for colour, it stays sharp at any zoom and re-themes automatically.

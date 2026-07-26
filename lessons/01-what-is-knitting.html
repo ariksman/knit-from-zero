@@ -6,7 +6,7 @@
 <title>1 · What knitting actually is — Knit From Zero</title>
 <meta name="description" content="Before you touch a needle: what a knitted stitch is, why the fabric stretches, and the vocabulary that makes every pattern readable.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='32' font-size='32'>🧶</text></svg>">
-<link rel="stylesheet" href="../assets/css/site.css?v=1">
+<link rel="stylesheet" href="../assets/css/site.css?v=2">
 </head>
 <body data-page="l01">
 <a class="skip" href="#main">Skip to content</a>
@@ -44,6 +44,11 @@
         <div id="anatomy"></div>
         <figcaption><b>Fig 1.</b> One stitch is a V. The <b>legs</b> are the two arms of the V; the <b>head</b> is the loop at the top that sits on the needle; the <b>running bar</b> is the short horizontal strand joining one stitch to the next. A vertical column of Vs is a <b>wale</b>; a horizontal line of them is a <b>course</b> (a row).</figcaption>
       </figure>
+
+      <h3>The same stitch, in three dimensions</h3>
+      <p class="prose">The flat drawing above has to lie about one thing: depth. A stitch is not a flat V — its two legs travel <em>towards you</em>, and the loop they were pulled through sits <em>behind</em> them. Turn this model edge-on and you can see it. The gold stitch is the one labelled above; the blue loop is the head of the stitch below, the one it was pulled through.</p>
+      <div data-knit3d='{"mode":"anatomy"}'></div>
+      <p class="small">More 3D models — every fabric in the course, and the dog itself — are on the <a href="../reference/3d-models.html">3D models page</a>.</p>
 
       <div class="grid g2">
         <div class="card">
@@ -138,10 +143,12 @@
   </main>
 </div>
 
-<script src="../assets/js/stitchsteps.js?v=1"></script>
-<script src="../assets/js/site.js?v=1"></script>
-<script src="../assets/js/knitgraph.js?v=1"></script>
-<script src="../assets/js/dogsvg.js?v=1"></script>
+<script src="../assets/js/stitchsteps.js?v=2"></script>
+<script src="../assets/js/site.js?v=2"></script>
+<script src="../assets/js/knitgraph.js?v=2"></script>
+<script src="../assets/js/dogsvg.js?v=2"></script>
+<script src="../assets/js/gl.js?v=2"></script>
+<script src="../assets/js/knit3d.js?v=2"></script>
 <script>
 /* ---- Fig 1: annotated stitch anatomy ---- */
 document.addEventListener("DOMContentLoaded", function () {

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D models — Knit From Zero</title>
+<meta name="description" content="Interactive 3D models of knitted fabric and of a Basenji wearing the sweater, generated from stitch geometry and breed measurements in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='32' font-size='32'>🧶</text></svg>">
+<link rel="stylesheet" href="../assets/css/site.css?v=2">
+</head>
+<body data-page="r00">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="shell">
+  <aside class="sidebar" aria-label="Course contents"></aside>
+  <main id="main" class="wide">
+
+    <div class="page-head">
+      <p class="eyebrow">Reference</p>
+      <h1>3D models</h1>
+      <p class="lead">Knitting is a three-dimensional structure pretending to be a flat one. Some things about it simply cannot be drawn: how loops pass through each other, why ribbing pulls in, why a stockinette swatch rolls up. Those are here, as real geometry you can turn over in your hands.</p>
+      <div class="meta-row">
+        <span class="chip rust">Drag to turn · pinch or scroll to zoom</span>
+        <span class="chip sage">Generated in your browser, not downloaded</span>
+        <span class="chip">Arrow keys work too</span>
+      </div>
+    </div>
+
+    <section>
+      <h2 style="margin-top:0">1 · One stitch, and its neighbours</h2>
+      <p class="prose">The middle stitch is picked out in gold and the head of the stitch below it in blue. Turn the model until you are looking at it edge-on: you will see that the two <em>legs</em> of the gold stitch travel forward, towards you, while the loop they were pulled through sits behind them. That front-and-back relationship is the whole of knitting, and it is invisible in any flat diagram.</p>
+      <div data-knit3d='{"mode":"anatomy"}'></div>
+      <p class="small">Compare it with the flat version in <a href="../lessons/01-what-is-knitting.html">lesson 1</a>.</p>
+    </section>
+
+    <section>
+      <h2>2 · Every fabric in the course</h2>
+      <p class="prose">The same generator, with only one thing changed: which way each stitch faces. Switch between them and turn the model over — garter looks identical from both sides, stockinette does not, and rib is the same fabric folded.</p>
+      <div data-knit3d='{"wales":12,"courses":10}'></div>
+
+      <div class="grid g2" style="margin-top:1.6rem">
+        <div class="note tip" style="margin-top:0">
+          <b class="label">Try this · why ribbing grips</b>
+          Choose <b>2×2 rib</b> and drag the <em>relax the rib</em> slider. No stitch changes size — the fabric simply folds, so the same width of knitting occupies less space. Let go of a real rib and exactly this happens. It is why the collar can go over a Basenji's head and then sit snugly on the neck.
+        </div>
+        <div class="note warn" style="margin-top:0">
+          <b class="label">Try this · why stockinette curls</b>
+          Choose <b>Stockinette</b> and drag <em>let the swatch go</em>. The top and bottom edges roll one way and the sides roll the other, because the loop is not symmetric front to back. This is why every edge in the sweater pattern is ribbing or garter, never plain stockinette.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3 · The dog, and the sweater on it</h2>
+      <p class="prose">Built from the breed standard: body length exactly equal to height at the withers, because the Basenji is a square breed; depth of body 47% of that height; forearm 41.5%, which is what makes the dog look leggy. The ribcage cross-section is an upright oval nearly twice as deep as it is wide, and the waist is 65% of the chest girth.</p>
+      <p class="prose">The sweater is a second surface lofted over the same body, with the leg openings genuinely cut out of it. Turn the sections on and each colour is one numbered part of <a href="../project/pattern.html">the pattern</a>.</p>
+      <div data-dog3d='{"measures":false}'></div>
+
+      <div class="table-wrap" style="margin-top:1.6rem">
+        <table>
+          <thead><tr><th>Station</th><th class="num">Along the body</th><th class="num">Width</th><th class="num">Depth</th><th>What the pattern does here</th></tr></thead>
+          <tbody id="stations"></tbody>
+        </table>
+      </div>
+      <p class="small">Widths and depths are fractions of the height at the withers. For a 10 kg Basenji standing about 42 cm tall, multiply by 42 to get centimetres.</p>
+    </section>
+
+    <section>
+      <h2>How these are made</h2>
+      <div class="grid g2">
+        <div class="card">
+          <h3 style="margin-top:0">The fabric</h3>
+          <p class="small">One continuous polyline is swept through every course of the swatch — because a piece of knitting <em>is</em> one continuous strand — and then thickened into a tube using parallel-transport frames so the yarn never twists as it turns.</p>
+          <p class="small">The loop itself is not a sine wave. A sine of this aspect ratio turns tighter at its peaks than the yarn is thick, and the tube turns inside out. Real yarn cannot bend tighter than itself, so the loop is built the way yarn actually lies: straight legs joined by arcs of a fixed radius comfortably larger than the yarn.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">The renderer</h3>
+          <p class="small">About four hundred lines of WebGL written for this site — no three.js, no libraries at all. One material: a hemisphere ambient term, a single directional light and a rim highlight, with the colours read from the same CSS custom properties as the rest of the page, so the models re-light themselves when you switch theme.</p>
+          <p class="small">Nothing renders unless something changed, and nothing renders at all while the model is off screen.</p>
+        </div>
+      </div>
+      <div class="note">
+        <b class="label">If you see nothing above</b>
+        These need WebGL. If your browser has it disabled or your graphics driver is blocklisted you will get a short message instead of a model — and nothing is lost, because everything demonstrated here is also covered by the flat diagrams in <a href="../lessons/01-what-is-knitting.html">lesson 1</a>, <a href="../lessons/05-fabric-and-gauge.html">lesson 5</a> and <a href="../project/measure-your-dog.html">the measuring page</a>.
+      </div>
+    </section>
+
+    <nav data-pager></nav>
+  </main>
+</div>
+
+<script src="../assets/js/stitchsteps.js?v=2"></script>
+<script src="../assets/js/site.js?v=2"></script>
+<script src="../assets/js/knitgraph.js?v=2"></script>
+<script src="../assets/js/gl.js?v=2"></script>
+<script src="../assets/js/knit3d.js?v=2"></script>
+<script src="../assets/js/dog3d.js?v=2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const NOTE = {
+    0.000: "Nothing — the sweater starts behind the forechest",
+    0.100: "Collar meets body; the chest increases begin",
+    0.210: "Leg openings. The chest girth the collar must stretch over",
+    0.320: "Deepest chest — the widest stitch count in the pattern",
+    0.430: "Widest point; the sweater is knitted straight through here",
+    0.540: "Waist decreases begin",
+    0.620: "Decreasing hard",
+    0.700: "The waist. 65% of the chest girth — this is why there is shaping at all",
+    0.800: "Hem sits just in front of the hip",
+    0.900: "Bare — the sweater has finished",
+    0.975: "Tail, always free",
+  };
+  const tb = document.getElementById("stations");
+  Dog3D.TORSO.forEach((s) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="mono">${s.x.toFixed(3)} H</td>
+      <td class="num">${(s.x * 42).toFixed(0)} cm</td>
+      <td class="num">${s.w.toFixed(3)} H</td>
+      <td class="num">${s.h.toFixed(3)} H</td>
+      <td class="small">${NOTE[s.x] || ""}</td>`;
+    tb.appendChild(tr);
+  });
+});
+</script>
+</body>
+</html>

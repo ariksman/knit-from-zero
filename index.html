@@ -6,7 +6,7 @@
 <title>Knit From Zero — learn to knit, end up with a sweater that fits your Basenji</title>
 <meta name="description" content="A complete beginner's knitting course. Ten lessons from 'I have never held a needle' to a finished, correctly-sized sweater for a 10 kg Basenji. Hand-drawn diagrams, step-through animations and a pattern generator that does the maths for you.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='32' font-size='32'>🧶</text></svg>">
-<link rel="stylesheet" href="assets/css/site.css?v=1">
+<link rel="stylesheet" href="assets/css/site.css?v=2">
 </head>
 <body data-page="home">
 <a class="skip" href="#main">Skip to content</a>
@@ -24,7 +24,8 @@
       <p class="small" style="margin-top:1.1rem">No account, no downloads, no video. Everything is on the page, and every diagram is drawn in your browser.</p>
     </div>
     <div>
-      <div data-dog='{"sweater":true,"caption":"Lesson 10 of 10: the graduation project."}'></div>
+      <div id="hero-dog"></div>
+      <p class="small center" style="margin:.6rem 0 0">A real 3D model, generated in your browser. Drag it.</p>
     </div>
   </div>
 </section>
@@ -43,8 +44,8 @@
     <section>
       <div class="grid g3">
         <div class="card">
-          <h3 style="margin-top:0">Everything is drawn, not photographed</h3>
-          <p class="small">Every stitch diagram on this site is generated as SVG in your browser from real stitch geometry. Zoom in as far as you like — it stays sharp, and it recolours with the theme.</p>
+          <h3 style="margin-top:0">Everything is generated, not photographed</h3>
+          <p class="small">Every diagram here is built in your browser from real stitch geometry — flat as SVG, and in <a href="reference/3d-models.html">three dimensions as WebGL</a>, because some things about knitting cannot be drawn flat.</p>
           <div data-fabric='{"type":"stockinette","cols":7,"rows":4}' style="margin-top:.6rem"></div>
         </div>
         <div class="card">
@@ -163,8 +164,21 @@
   </main>
 </div>
 
-<script src="assets/js/site.js?v=1"></script>
-<script src="assets/js/knitgraph.js?v=1"></script>
-<script src="assets/js/dogsvg.js?v=1"></script>
+<script src="assets/js/site.js?v=2"></script>
+<script src="assets/js/knitgraph.js?v=2"></script>
+<script src="assets/js/dogsvg.js?v=2"></script>
+<script src="assets/js/gl.js?v=2"></script>
+<script src="assets/js/dog3d.js?v=2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const host = document.getElementById("hero-dog");
+  const built = window.Dog3D && Dog3D.mount(host, { controls: false, legend: false, measures: false, coloured: false });
+  if (!built) {
+    /* no WebGL — fall back to the flat illustration rather than a blank box */
+    host.innerHTML = "";
+    KnitDog.draw(host, { sweater: true, caption: "Lesson 10 of 10: the graduation project." });
+  }
+});
+</script>
 </body>
 </html>
