@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Basenji Sweater — pattern generator — Knit From Zero</title>
+<meta name="description" content="A complete round-by-round dog sweater pattern, recalculated from your dog's measurements and your own knitting gauge. Printable and downloadable.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='32' font-size='32'>🧶</text></svg>">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body data-page="p02">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="shell">
+  <aside class="sidebar" aria-label="Course contents"></aside>
+  <main id="main" class="wide">
+
+    <div class="page-head">
+      <p class="eyebrow">The project · Step 2 of 4</p>
+      <h1>The Basenji Sweater</h1>
+      <p class="lead">One piece, knitted from the collar down, in the round, with no seams. A folded rib collar, a shaped chest, two proper leg openings, a waist that follows the tuck-up, and a stretchy ribbed hem. Every number below is calculated from your dog and your gauge — change any input and the whole pattern rewrites itself.</p>
+      <div class="meta-row">
+        <span class="chip rust">Beginner, but not a first-ever project</span>
+        <span class="chip">2–3 evenings</span>
+        <span class="chip sage">Needs lessons 3–7</span>
+        <span class="chip ochre">Printable</span>
+      </div>
+    </div>
+
+    <section class="no-print">
+      <h2 style="margin-top:0">Your numbers</h2>
+      <div class="card">
+        <h4 style="margin-top:0">The dog</h4>
+        <div class="grid g3">
+          <div class="field"><label for="i-neck">Neck, cm</label><input type="number" id="i-neck" value="36" step="0.5"><div class="hint">Base of the neck, where a collar sits</div></div>
+          <div class="field"><label for="i-chest">Chest girth, cm</label><input type="number" id="i-chest" value="54" step="0.5"><div class="hint">Deepest point, behind the front legs</div></div>
+          <div class="field"><label for="i-back">Back length, cm</label><input type="number" id="i-back" value="42" step="0.5"><div class="hint">Neck base to tail base</div></div>
+        </div>
+
+        <h4>Your gauge <span style="text-transform:none;font-weight:400">— from your washed swatch (lesson 5)</span></h4>
+        <div class="grid g3">
+          <div class="field"><label for="i-sts">Stitches per 10 cm</label><input type="number" id="i-sts" value="22" step="0.5"></div>
+          <div class="field"><label for="i-rows">Rounds per 10 cm</label><input type="number" id="i-rows" value="30" step="0.5"></div>
+          <div class="field"><label for="i-ease">Chest ease, cm</label><input type="number" id="i-ease" value="1" step="0.5"><div class="hint">1 cm is snug and stays put</div></div>
+        </div>
+
+        <h4>Options</h4>
+        <div class="grid g3">
+          <div class="field"><label for="i-collar">Collar depth, cm</label><input type="number" id="i-collar" value="8" step="0.5"><div class="hint">8 cm folds over neatly</div></div>
+          <div class="field"><label for="i-hem">Hem rib, cm</label><input type="number" id="i-hem" value="5" step="0.5"></div>
+          <div class="field" style="display:flex;flex-direction:column;justify-content:flex-end">
+            <label style="text-transform:none;letter-spacing:0;font-size:.9rem;font-weight:400;display:flex;gap:.5rem;align-items:center;cursor:pointer">
+              <input type="checkbox" id="i-boy" style="width:auto"> Add the belly notch for a boy dog</label>
+            <label style="text-transform:none;letter-spacing:0;font-size:.9rem;font-weight:400;display:flex;gap:.5rem;align-items:center;cursor:pointer;margin-top:.4rem">
+              <input type="checkbox" id="i-express" style="width:auto"> Include the express leg-slit shortcut</label>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:.8rem">
+          <button class="primary" id="btn-print">Print this pattern</button>
+          <button id="btn-txt">Download as text</button>
+          <button id="btn-reset">Reset to the sample Basenji</button>
+          <span class="spacer"></span>
+          <span class="small" id="src-note"></span>
+        </div>
+      </div>
+      <div id="warnings"></div>
+    </section>
+
+    <section>
+      <h2>The plan</h2>
+      <figure class="diagram">
+        <div id="schematic"></div>
+        <figcaption id="schem-cap"><b>Fig 17.</b> The sweater as a flat schematic, drawn to your numbers. It is knitted as a single tube starting at the collar on the left.</figcaption>
+      </figure>
+
+      <figure class="diagram">
+        <div id="roadmap"></div>
+        <figcaption><b>Fig 18.</b> The road map, in order. Each band is one section of the pattern below, with its round numbers.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h2>The pattern</h2>
+      <div class="pattern-out" id="out"></div>
+    </section>
+
+    <section class="no-print">
+      <h2>Abbreviations used above</h2>
+      <div class="grid g2">
+        <div class="card">
+          <dl class="gloss" style="margin:0">
+            <dt>k / p</dt><dd>knit / purl</dd>
+            <dt>k2tog</dt><dd>knit two stitches together — a right-leaning decrease</dd>
+            <dt>ssk</dt><dd>slip, slip, knit — a left-leaning decrease</dd>
+            <dt>M1L / M1R</dt><dd>make one left / right — an increase from the running bar</dd>
+          </dl>
+        </div>
+        <div class="card">
+          <dl class="gloss" style="margin:0">
+            <dt>pm / sm</dt><dd>place marker / slip marker</dd>
+            <dt>BO / CO</dt><dd>bind off / cast on</dd>
+            <dt>RS / WS</dt><dd>right side / wrong side</dd>
+            <dt>Rnd</dt><dd>round — one full lap of the tube</dd>
+          </dl>
+        </div>
+      </div>
+      <p class="small">Full list in the <a href="../reference/glossary.html">glossary</a>. Every one of these is taught in lessons 4, 6 and 10.</p>
+    </section>
+
+    <section class="no-print">
+      <h2>Before you cast on</h2>
+      <div class="note stop">
+        <b class="label">Three things that go wrong, and how not to do them</b>
+        <b>1 · Twisting the join.</b> Unfixable. Lay the cast on flat and check the whole circle before you join — see lesson 7.<br>
+        <b>2 · A tight cast on or bind off.</b> The collar has to go over the head and the hem over the ribcage. Both edges must stretch.<br>
+        <b>3 · Not swatching.</b> If your gauge is not what you typed above, none of these numbers apply. It is twenty minutes against three evenings.
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Your progress through the sweater</h3>
+        <ul class="checklist" data-key="p02-build">
+          <li><label><input type="checkbox"><span>Swatch knitted, washed, measured — numbers entered above</span></label></li>
+          <li><label><input type="checkbox"><span>Collar cast on and joined without a twist</span></label></li>
+          <li><label><input type="checkbox"><span>Collar ribbing finished</span></label></li>
+          <li><label><input type="checkbox"><span>Chest increases finished — stitch count checked</span></label></li>
+          <li><label><input type="checkbox"><span>Lifeline threaded before dividing for the legs</span></label></li>
+          <li><label><input type="checkbox"><span>Back panel worked flat</span></label></li>
+          <li><label><input type="checkbox"><span>Belly bridge worked flat, same number of rows</span></label></li>
+          <li><label><input type="checkbox"><span>Rejoined in the round, stitch count restored</span></label></li>
+          <li><label><input type="checkbox"><span>Waist decreases finished</span></label></li>
+          <li><label><input type="checkbox"><span>Hem ribbing worked and bound off loosely</span></label></li>
+          <li><label><input type="checkbox"><span>Leg cuffs picked up and ribbed</span></label></li>
+          <li><label><input type="checkbox"><span>Ends woven in — 5 cm forward, 2 cm back, each one</span></label></li>
+          <li><label><input type="checkbox"><span>Blocked and dried flat</span></label></li>
+          <li><label><input type="checkbox"><span>Tried on a real dog. Photographed. Insufferable about it.</span></label></li>
+        </ul>
+        <button data-mark-done class="primary">Mark this step complete</button>
+      </div>
+      <p style="margin-top:1.4rem"><a class="btn btn-lg" href="knit-along.html">Want it explained more slowly? → the knit-along walkthrough</a></p>
+    </section>
+
+    <nav data-pager></nav>
+  </main>
+</div>
+
+<script src="../assets/js/stitchsteps.js?v=1"></script>
+<script src="../assets/js/site.js?v=1"></script>
+<script src="../assets/js/knitgraph.js?v=1"></script>
+<script src="../assets/js/pattern.js?v=1"></script>
+<script src="../assets/js/dogsvg.js?v=1"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (n, a, t) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (t != null) e.textContent = t; return e; };
+
+  const F = {
+    neck: "i-neck", chest: "i-chest", backLength: "i-back",
+    stsPer10: "i-sts", rowsPer10: "i-rows", ease: "i-ease",
+    collarCm: "i-collar", hemCm: "i-hem",
+  };
+  const el = {};
+  Object.keys(F).forEach((k) => el[k] = document.getElementById(F[k]));
+  const boy = document.getElementById("i-boy"), express = document.getElementById("i-express");
+
+  /* prefill from the measure-your-dog page */
+  let dog = {};
+  try { dog = JSON.parse(localStorage.getItem("kfz-dog")) || {}; } catch (e) {}
+  const note = document.getElementById("src-note");
+  if (dog.chest) {
+    if (dog.neck) el.neck.value = dog.neck;
+    if (dog.chest) el.chest.value = dog.chest;
+    if (dog.back) el.backLength.value = dog.back;
+    note.innerHTML = "Using the measurements you saved" + (dog.name ? " for <b>" + dog.name + "</b>" : "") + ".";
+  } else {
+    note.innerHTML = 'Sample numbers for a 10 kg Basenji. <a href="measure-your-dog.html">Measure your own dog →</a>';
+  }
+  /* remember gauge separately */
+  let gauge = {};
+  try { gauge = JSON.parse(localStorage.getItem("kfz-gauge")) || {}; } catch (e) {}
+  if (gauge.sts) el.stsPer10.value = gauge.sts;
+  if (gauge.rows) el.rowsPer10.value = gauge.rows;
+
+  let current = null;
+
+  function roadmap(p) {
+    const bands = [
+      ["Collar rib", p.collar.rnds, "var(--ochre)"],
+      ["Chest increases", p.rise.riseRnds, "var(--sage)"],
+      ["Plain", p.even.rnds, "var(--ink-3)"],
+      ["Leg openings", p.legs.rows + 1, "var(--indigo)"],
+      ["Waist decreases", p.waist.rnds, "var(--sage)"],
+      ["Straight", p.straight.rnds, "var(--rust)"],
+      ["Hem rib", p.hem.rnds, "var(--ochre)"],
+    ].filter((b) => b[1] > 0);
+    const total = bands.reduce((a, b) => a + b[1], 0);
+    const W = 900, H = 150, x0 = 10, w = W - 20;
+    const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, style: "width:100%;display:block" });
+    let x = x0, rnd = 0;
+    bands.forEach((b) => {
+      const bw = (b[1] / total) * w;
+      svg.appendChild(mk("rect", { x, y: 40, width: Math.max(2, bw - 2), height: 42, fill: b[2], opacity: ".9", rx: 3 }));
+      if (bw > 46) {
+        const t = mk("text", { x: x + bw / 2, y: 66, "font-size": 12, "font-family": "var(--sans)", "font-weight": 600, fill: "var(--paper)", "text-anchor": "middle" }, b[0]);
+        svg.appendChild(t);
+      }
+      const lbl = mk("text", { x: x + bw / 2, y: 102, "font-size": 11.5, "font-family": "var(--mono)", fill: "var(--ink-3)", "text-anchor": "middle" }, b[1] + " rnds");
+      if (bw > 46) svg.appendChild(lbl);
+      if (bw <= 46) {
+        svg.appendChild(mk("text", { x: x + bw / 2, y: 30, "font-size": 11, "font-family": "var(--sans)", fill: "var(--ink-3)", "text-anchor": "middle", transform: `rotate(-40 ${x + bw / 2} 30)` }, b[0]));
+      }
+      rnd += b[1]; x += bw;
+    });
+    svg.appendChild(mk("text", { x: x0, y: 128, "font-size": 12.5, "font-family": "var(--mono)", fill: "var(--ink-2)" }, "start"));
+    svg.appendChild(mk("text", { x: W - 10, y: 128, "font-size": 12.5, "font-family": "var(--mono)", fill: "var(--ink-2)", "text-anchor": "end" }, total + " rounds in total"));
+    const host = document.getElementById("roadmap");
+    host.innerHTML = ""; host.appendChild(svg);
+  }
+
+  function run() {
+    const inp = { boyNotch: boy.checked, expressLegs: express.checked };
+    Object.keys(F).forEach((k) => inp[k] = parseFloat(el[k].value) || KFZPattern.DEFAULTS[k]);
+    const p = KFZPattern.compute(inp);
+    current = p;
+
+    document.getElementById("out").innerHTML = KFZPattern.render(p);
+
+    KnitGraph.schematic(document.getElementById("schematic"), {
+      totalLen: p.totals.garmentCm.toFixed(0) + " cm",
+      neck: p.totals.finishedNeck.toFixed(0) + " cm",
+      chest: p.totals.finishedChest.toFixed(0) + " cm",
+      waist: p.totals.finishedWaist.toFixed(0) + " cm",
+    });
+    document.getElementById("schem-cap").innerHTML =
+      `<b>Fig 17.</b> Your sweater: <b>${p.totals.finishedChest.toFixed(0)} cm</b> around the chest, <b>${p.totals.garmentCm.toFixed(0)} cm</b> long, ` +
+      `<b>${p.body.sts} stitches</b> at the widest point, <b>${p.totals.allRnds} rounds</b> in all. ` +
+      `Estimated yarn: <b>${p.yarn.grams} g</b> of ${p.yarn.band}.`;
+
+    roadmap(p);
+
+    const w = document.getElementById("warnings");
+    w.innerHTML = p.warn.length
+      ? p.warn.map((t) => `<div class="note warn"><b class="label">Adjusted for you</b>${t}</div>`).join("")
+      : "";
+
+    localStorage.setItem("kfz-gauge", JSON.stringify({ sts: el.stsPer10.value, rows: el.rowsPer10.value }));
+  }
+
+  Object.values(el).forEach((i) => i.addEventListener("input", run));
+  boy.addEventListener("change", run);
+  express.addEventListener("change", run);
+
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    el.neck.value = 36; el.chest.value = 54; el.backLength.value = 42;
+    el.stsPer10.value = 22; el.rowsPer10.value = 30; el.ease.value = 1;
+    el.collarCm.value = 8; el.hemCm.value = 5; boy.checked = false; express.checked = false;
+    run();
+  });
+  document.getElementById("btn-txt").addEventListener("click", () => {
+    const blob = new Blob([KFZPattern.toText(current)], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "basenji-sweater-pattern.txt";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+
+  run();
+});
+</script>
+</body>
+</html>

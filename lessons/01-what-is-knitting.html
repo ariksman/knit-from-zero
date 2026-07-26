@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1 · What knitting actually is — Knit From Zero</title>
+<meta name="description" content="Before you touch a needle: what a knitted stitch is, why the fabric stretches, and the vocabulary that makes every pattern readable.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='32' font-size='32'>🧶</text></svg>">
+<link rel="stylesheet" href="../assets/css/site.css?v=1">
+</head>
+<body data-page="l01">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="shell">
+  <aside class="sidebar" aria-label="Course contents"></aside>
+  <main id="main">
+
+    <div class="page-head">
+      <p class="eyebrow">Lesson 01 · Start here</p>
+      <h1>What knitting actually is</h1>
+      <p class="lead">Ten minutes, no yarn, no needles. This is the lesson that makes every later instruction make sense — because once you can see what a stitch <em>is</em>, phrases like “knit through the back loop” stop being magic words.</p>
+      <div class="meta-row">
+        <span class="chip rust">10 minutes</span>
+        <span class="chip">Nothing to buy yet</span>
+        <span class="chip sage">Read it once, then skim it again after lesson 4</span>
+      </div>
+    </div>
+
+    <section class="prose">
+      <h2 style="margin-top:0">One loop pulled through another loop</h2>
+      <p>That is the entire craft. You have a row of loops sitting on a stick. You pull a new loop of yarn through each old loop, and the new loops end up on a second stick. When you reach the end you swap the sticks around and do it again.</p>
+      <p>Everything else — cables, lace, colourwork, the shaping in a dog sweater — is variations on <em>which</em> loop you pull through, in <em>which</em> direction, and in <em>what order</em>.</p>
+      <div class="note tip">
+        <b class="label">The one sentence to remember</b>
+        Knitted fabric is not woven and it is not glued. It is a single continuous strand of yarn, held together entirely by the fact that each loop is trapped by the loop above it. Cut the strand anywhere and the whole thing can come undone — which is both the danger and the superpower.
+      </div>
+    </section>
+
+    <section>
+      <h2>The anatomy of a stitch</h2>
+      <p class="prose">Knitters have names for the parts of a loop, and patterns use them constantly. Here is a piece of stockinette fabric magnified. Tap or hover the labels.</p>
+
+      <figure class="diagram">
+        <div id="anatomy"></div>
+        <figcaption><b>Fig 1.</b> One stitch is a V. The <b>legs</b> are the two arms of the V; the <b>head</b> is the loop at the top that sits on the needle; the <b>running bar</b> is the short horizontal strand joining one stitch to the next. A vertical column of Vs is a <b>wale</b>; a horizontal line of them is a <b>course</b> (a row).</figcaption>
+      </figure>
+
+      <div class="grid g2">
+        <div class="card">
+          <h3 style="margin-top:0">Why “through the back loop” means something</h3>
+          <p class="small">The head of a stitch straddles the needle: one leg in front, one behind. Push your needle in on the front side and the stitch stays open and flat. Push it in on the back side and the stitch twists a half turn. Patterns use both — but only on purpose. If your knitting looks tight and the Vs look crossed at the base, you are twisting them by accident.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Why a dropped stitch runs</h3>
+          <p class="small">If a head slips off the needle, nothing is holding the loop below it. It pops open, which frees the loop below <em>that</em>, and so on down the wale — a ladder. It is not a disaster and lesson 8 shows you how to climb it back up with a crochet hook. But it is why you count.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Knit and purl are the same stitch</h2>
+      <p class="prose">There are exactly two things you can do to a stitch: pull the new loop through towards you, or pull it away from you. Pull it away and you get a <strong>knit</strong>. Pull it towards you and you get a <strong>purl</strong>. Same loop, same yarn — you are just looking at the other side of it.</p>
+
+      <div class="grid g2">
+        <figure class="diagram" style="margin-top:0">
+          <div data-fabric='{"type":"stockinette","cols":8,"rows":6}'></div>
+          <figcaption><b>The knit face.</b> Smooth, flat, columns of neat Vs. This is the “right side” of stockinette.</figcaption>
+        </figure>
+        <figure class="diagram" style="margin-top:0">
+          <div data-fabric='{"type":"reverse","cols":8,"rows":6,"colour":"var(--yarn-c)"}'></div>
+          <figcaption><b>The purl face.</b> Bumpy, horizontal ridges. This is the exact same fabric, turned over.</figcaption>
+        </figure>
+      </div>
+
+      <div class="note">
+        <b class="label">This is the trick behind every texture</b>
+        Because knit and purl are two faces of one thing, you can make patterns by choosing which face points outwards at each stitch. Alternate them by row and you get garter stitch. Alternate them by column and you get ribbing. Alternate them like a chessboard and you get seed stitch. Three completely different fabrics, two stitches, no new skills.
+      </div>
+    </section>
+
+    <section>
+      <h2>Why knitted fabric stretches — and why that matters for a dog</h2>
+      <p class="prose">Woven cloth is two sets of straight threads crossing at right angles. Pull it and there is nowhere for the threads to go. Knitted fabric is loops, and a loop can change shape: pull sideways and the loops flatten and widen; let go and they spring back.</p>
+      <p class="prose">Drag the slider to stretch the fabric below.</p>
+
+      <div class="card">
+        <div id="stretch-demo" style="overflow:hidden"></div>
+        <div class="field" style="margin:1rem 0 0">
+          <label for="stretch">Sideways stretch</label>
+          <input type="range" id="stretch" min="100" max="175" value="100">
+          <div class="hint" id="stretch-out">Relaxed — 100%</div>
+        </div>
+      </div>
+
+      <p class="prose">This is why a knitted sweater can go over a Basenji's head and deep chest and then sit snugly at the waist, and why a woven one would need buttons, zips or a much looser fit. It is also why <em>gauge</em> — how many stitches you get per 10 cm — is the single number the whole project depends on. Loops that are 10% bigger than the pattern assumed give you a sweater 10% too big. Lesson 5 deals with this properly.</p>
+
+      <div class="note warn">
+        <b class="label">The direction that does not stretch</b>
+        Knitting stretches a lot sideways, some vertically, and almost not at all along a cast-on or bound-off edge unless you deliberately work those edges loosely. Every "I can't get it over his head" story starts at one of those two edges.
+      </div>
+    </section>
+
+    <section>
+      <h2>The vocabulary you now own</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Word</th><th>What it means</th><th>Where you will meet it</th></tr></thead>
+          <tbody>
+            <tr><td><b>Stitch</b></td><td>One loop.</td><td>Everywhere. “Cast on 76 stitches.”</td></tr>
+            <tr><td><b>Row</b></td><td>One pass across flat knitting, left needle to right needle.</td><td>Flat pieces — the belly panel of the sweater.</td></tr>
+            <tr><td><b>Round</b></td><td>One lap of a tube. There is no turning, so you never see the back.</td><td>Most of the sweater.</td></tr>
+            <tr><td><b>Wale</b></td><td>A vertical column of stitches.</td><td>Ribbing is alternating knit and purl wales.</td></tr>
+            <tr><td><b>Working yarn</b></td><td>The strand still attached to the ball.</td><td>“Bring the working yarn to the front.”</td></tr>
+            <tr><td><b>Right side / RS</b></td><td>The face that will be on the outside of the finished thing.</td><td>“With RS facing, pick up 40 sts.”</td></tr>
+            <tr><td><b>Wrong side / WS</b></td><td>The other one. Nothing is wrong with it.</td><td>“End after a WS row.”</td></tr>
+            <tr><td><b>Live stitch</b></td><td>A stitch still on a needle, able to be worked or to unravel.</td><td>“Place 14 sts on hold.”</td></tr>
+            <tr><td><b>Gauge / tension</b></td><td>Stitches and rows per 10 cm.</td><td>The number that decides whether it fits.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small">The full list, including every abbreviation used in the project pattern, lives in the <a href="../reference/glossary.html">glossary</a>. You do not need to memorise anything — but you will find you have absorbed most of it by lesson 6.</p>
+    </section>
+
+    <section>
+      <div class="card">
+        <h3 style="margin-top:0">Before you move on</h3>
+        <ul class="checklist" data-key="l01">
+          <li><label><input type="checkbox"><span>I can point to the legs, the head and the running bar of a stitch.</span></label></li>
+          <li><label><input type="checkbox"><span>I can say in one sentence what the difference between a knit and a purl is.</span></label></li>
+          <li><label><input type="checkbox"><span>I understand why a dropped stitch runs downwards and not upwards.</span></label></li>
+          <li><label><input type="checkbox"><span>I know what “gauge” refers to, even if I do not yet know how to measure it.</span></label></li>
+        </ul>
+        <button data-mark-done class="primary">Mark this lesson complete</button>
+      </div>
+    </section>
+
+    <nav data-pager></nav>
+  </main>
+</div>
+
+<script src="../assets/js/stitchsteps.js?v=1"></script>
+<script src="../assets/js/site.js?v=1"></script>
+<script src="../assets/js/knitgraph.js?v=1"></script>
+<script src="../assets/js/dogsvg.js?v=1"></script>
+<script>
+/* ---- Fig 1: annotated stitch anatomy ---- */
+document.addEventListener("DOMContentLoaded", function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (n, a, t) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (t != null) e.textContent = t; return e; };
+
+  const W = 700, H = 420, cols = 4, rows = 3;
+  const cw = 118, ch = 96, ox = 130, oy = 78;
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, style: "width:100%;display:block" });
+
+  const fab = mk("g", { opacity: ".38" });
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      KnitGraph.knitV(fab, ox + c * cw, oy + r * ch, cw, ch, "var(--yarn-a)", 22);
+  svg.appendChild(fab);
+
+  /* the hero stitch, full opacity */
+  const hero = mk("g");
+  KnitGraph.knitV(hero, ox + cw, oy + ch, cw, ch, "var(--yarn-a)", 22);
+  svg.appendChild(hero);
+
+  const hx = ox + cw, hy = oy + ch;
+
+  /* running bar between this stitch and its neighbour */
+  svg.appendChild(mk("path", {
+    d: `M ${hx + cw * 0.5} ${hy + ch * 0.9} C ${hx + cw * 0.8} ${hy + ch * 0.98}, ${hx + cw * 1.2} ${hy + ch * 0.98}, ${hx + cw * 1.5} ${hy + ch * 0.9}`,
+    fill: "none", stroke: "var(--sage)", "stroke-width": 8, "stroke-linecap": "round",
+  }));
+
+  /* head of the stitch — the arc that sits on the needle */
+  svg.appendChild(mk("path", {
+    d: `M ${hx - cw * 0.06} ${hy + ch * 0.02} C ${hx + cw * 0.2} ${hy - ch * 0.22}, ${hx + cw * 0.8} ${hy - ch * 0.22}, ${hx + cw * 1.06} ${hy + ch * 0.02}`,
+    fill: "none", stroke: "var(--ochre)", "stroke-width": 9, "stroke-linecap": "round", "stroke-dasharray": "0",
+  }));
+
+  const lead = (x1, y1, x2, y2, col) => svg.appendChild(mk("path", { d: `M ${x1} ${y1} L ${x2} ${y2}`, stroke: col, "stroke-width": 1.6, "stroke-dasharray": "5 4" }));
+  const tag = (x, y, txt, col, anchor) => svg.appendChild(mk("text", { x, y, "font-size": 16, "font-family": "var(--mono)", "font-weight": 600, fill: col, "text-anchor": anchor || "middle" }, txt));
+
+  lead(hx + cw / 2, hy - ch * 0.14, hx + cw / 2, 34, "var(--ochre)");
+  tag(hx + cw / 2, 26, "head (sits on the needle)", "var(--ochre)");
+
+  lead(hx + cw * 0.16, hy + ch * 0.5, 96, hy + ch * 0.34, "var(--rust)");
+  tag(90, hy + ch * 0.34 + 5, "leg", "var(--rust)", "end");
+
+  lead(hx + cw * 0.86, hy + ch * 0.5, hx + cw * 1.9, hy + ch * 0.3, "var(--rust)");
+  tag(hx + cw * 1.95, hy + ch * 0.3 + 5, "leg", "var(--rust)", "start");
+
+  lead(hx + cw, hy + ch * 0.95, hx + cw * 1.9, hy + ch * 1.24, "var(--sage)");
+  tag(hx + cw * 1.95, hy + ch * 1.24 + 5, "running bar", "var(--sage)", "start");
+
+  /* wale + course guides */
+  svg.appendChild(mk("path", { d: `M ${hx + cw / 2} ${oy - 6} L ${hx + cw / 2} ${oy + rows * ch + 6}`, stroke: "var(--indigo)", "stroke-width": 2, "stroke-dasharray": "9 7", opacity: ".8" }));
+  tag(hx + cw / 2, oy + rows * ch + 30, "wale — one column", "var(--indigo)");
+  svg.appendChild(mk("path", { d: `M ${ox - 10} ${hy + ch * 0.45} L ${ox + cols * cw + 10} ${hy + ch * 0.45}`, stroke: "var(--indigo)", "stroke-width": 2, "stroke-dasharray": "9 7", opacity: ".55" }));
+  tag(ox + cols * cw + 14, hy + ch * 0.45 + 5, "course", "var(--indigo)", "start");
+
+  document.getElementById("anatomy").appendChild(svg);
+
+  /* ---- stretch demo ---- */
+  const host = document.getElementById("stretch-demo");
+  KnitGraph.fabric(host, { type: "stockinette", cols: 12, rows: 6, colour: "var(--yarn-a)" });
+  const inner = host.firstChild;
+  inner.style.transformOrigin = "left center";
+  const rng = document.getElementById("stretch");
+  const out = document.getElementById("stretch-out");
+  rng.addEventListener("input", function () {
+    const v = +rng.value / 100;
+    inner.style.transform = `scaleX(${v}) scaleY(${1 - (v - 1) * 0.45})`;
+    out.textContent = v === 1 ? "Relaxed — 100%" :
+      `Stretched to ${rng.value}% — notice it also gets shorter, exactly like real fabric`;
+  });
+});
+</script>
+</body>
+</html>
