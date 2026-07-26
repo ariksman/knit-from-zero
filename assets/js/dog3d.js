@@ -175,7 +175,7 @@
       positions.push(0.5 + Math.cos(a) * 0.52, 0.002, Math.sin(a) * 0.20);
       normals.push(0, 1, 0);
     }
-    for (let i = 1; i <= seg; i++) indices.push(0, i, i + 1);
+    for (let i = 1; i <= seg; i++) indices.push(0, i + 1, i);   // CCW seen from above
     return { positions: new Float32Array(positions), normals: new Float32Array(normals), indices };
   }
 

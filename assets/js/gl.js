@@ -612,6 +612,13 @@
      Geometry builders
      ========================================================= */
 
+  /* WINDING: every builder here emits counter-clockwise triangles when
+     seen from outside the surface, which is what gl.cullFace(BACK)
+     expects. Get this backwards and the renderer quietly draws the
+     inside of everything — lit from the wrong side, with the rim term
+     saturated over the whole model. There is a unit check for it in
+     the console: KFZGeom.checkWinding(). */
+
   /* A tube swept along a polyline, using parallel-transport frames
      so the cross-section never spins as the curve turns. */
   function tube(points, radius, radial, opts) {
@@ -677,16 +684,16 @@
       for (let j = 0; j < rad; j++) {
         const j2 = (j + 1) % rad;
         const a = i * rad + j, b = i * rad + j2, c = (i + 1) * rad + j, d = (i + 1) * rad + j2;
-        indices.push(a, c, b, b, c, d);
+        indices.push(a, b, c, b, d, c);
       }
     }
     if (o.caps) {
       /* close both ends with a fan, otherwise back-face culling makes the
          cut ends of the yarn read as holes */
       for (let j = 1; j < rad - 1; j++) {
-        indices.push(0, j + 1, j);
+        indices.push(0, j + 1, j);                    // start cap faces backwards along the curve
         const base = (n - 1) * rad;
-        indices.push(base, base + j, base + j + 1);
+        indices.push(base, base + j, base + j + 1);   // end cap faces forwards
       }
     }
     return { positions, normals, colors, indices };
@@ -741,15 +748,15 @@
         if (o.hole && o.hole(i, j, n, rad)) continue;
         const j2 = (j + 1) % rad;
         const a = i * rad + j, b = i * rad + j2, c = (i + 1) * rad + j, d = (i + 1) * rad + j2;
-        indices.push(a, c, b, b, c, d);
+        indices.push(a, b, c, b, d, c);
       }
     }
     /* flat caps */
     function cap(ring, flip) {
       const base = ring * rad;
       for (let j = 1; j < rad - 1; j++) {
-        if (flip) indices.push(base, base + j, base + j + 1);
-        else indices.push(base, base + j + 1, base + j);
+        if (flip) indices.push(base, base + j + 1, base + j);
+        else indices.push(base, base + j, base + j + 1);
       }
     }
     if (o.capStart) cap(0, true);
@@ -773,7 +780,7 @@
     for (let i = 0; i < rings; i++) {
       for (let j = 0; j < seg; j++) {
         const a = i * (seg + 1) + j, b = a + seg + 1;
-        indices.push(a, b, a + 1, a + 1, b, b + 1);
+        indices.push(a, a + 1, b, a + 1, b + 1, b);
       }
     }
     return { positions: new Float32Array(positions), normals: new Float32Array(normals), indices };
@@ -829,6 +836,32 @@
     return out;
   }
 
+  /* Convex test meshes must come out with their triangle normals
+     pointing away from the centre. Cheap insurance against the
+     winding silently inverting again. */
+  function checkWinding() {
+    const report = {};
+    const test = (name, mesh, centre) => {
+      let out = 0, inn = 0;
+      for (let k = 0; k < mesh.indices.length; k += 3) {
+        const p = (i) => [mesh.positions[i * 3], mesh.positions[i * 3 + 1], mesh.positions[i * 3 + 2]];
+        const a = p(mesh.indices[k]), b = p(mesh.indices[k + 1]), c = p(mesh.indices[k + 2]);
+        const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+        const n = cross(u, v);
+        const cen = [(a[0] + b[0] + c[0]) / 3 - centre[0], (a[1] + b[1] + c[1]) / 3 - centre[1], (a[2] + b[2] + c[2]) / 3 - centre[2]];
+        const d = dot(n, cen);
+        if (Math.abs(d) < 1e-12) continue;
+        if (d > 0) out++; else inn++;
+      }
+      report[name] = { outward: out, inward: inn, ok: inn === 0 };
+    };
+    test("sphere", sphere(0, 0, 0, 1, 12, 8), [0, 0, 0]);
+    const line = []; for (let i = 0; i <= 10; i++) line.push([0, i * 0.5, 0]);
+    test("tube", tube(line, 0.3, 10), [0, 2.5, 0]);
+    test("loft", loft(line.map((p) => ({ c: p, rx: 0.3, ry: 0.3 })), 12), [0, 2.5, 0]);
+    return report;
+  }
+
   window.KFZGL = { create, M4, cssColour };
-  window.KFZGeom = { tube, loft, sphere, merge, spline, cross, dot, normalise };
+  window.KFZGeom = { tube, loft, sphere, merge, spline, cross, dot, normalise, checkWinding };
 })();
