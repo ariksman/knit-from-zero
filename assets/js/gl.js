@@ -137,6 +137,8 @@
   /* ---------------------------------------------------------
      Scene
      --------------------------------------------------------- */
+  let uid = 0;
+
   function create(host, opts) {
     const o = Object.assign({
       distance: 4, phi: 0.35, theta: 0.6, target: [0, 0, 0],
@@ -156,15 +158,16 @@
     overlay.className = "gl-overlay";
     stage.append(canvas, overlay);
 
+    const HINT_HTML = "<span>drag to turn</span><span>click first, then scroll to zoom</span><span>double-tap to reset</span>";
     const hint = document.createElement("div");
     hint.className = "gl-hint";
-    hint.innerHTML = "<span>drag to turn</span><span>scroll or pinch to zoom</span><span>double-tap to reset</span>";
+    hint.innerHTML = HINT_HTML;
     stage.appendChild(hint);
 
     /* A canvas is a bitmap and exposes nothing to assistive technology,
        so the instructions live in real text and the camera gets real
        buttons as well as the pointer and the keyboard. */
-    const helpId = "gl-help-" + Math.floor(performance.now() % 1e9).toString(36);
+    const helpId = "gl-help-" + (++uid);
     const help = document.createElement("p");
     help.id = helpId;
     help.className = "sr-only";
@@ -206,6 +209,8 @@
     if (!gl) gl = canvas.getContext("webgl", ATTRS);
     if (!gl) {
       stage.remove();
+      help.remove();
+      nudge.remove();
       const msg = document.createElement("div");
       msg.className = "gl-fallback";
       msg.innerHTML = "<b>3D unavailable</b><p>Your browser has WebGL turned off or blocked, so the interactive model cannot be shown. Everything it demonstrates is also covered by the flat diagrams on this page.</p>"
@@ -213,20 +218,27 @@
       host.appendChild(msg);
       return null;
     }
-    if (!isGL2) gl.getExtension("OES_element_index_uint");
+    /* 32-bit indices need WebGL2 or the extension; without either, a mesh
+       over 65535 vertices simply cannot be indexed and must be refused
+       rather than drawn as garbage */
+    let uintOK = isGL2 || !!gl.getExtension("OES_element_index_uint");
 
-    const prog = gl.createProgram();
-    const vs = compile(gl, gl.VERTEX_SHADER, VS), fs = compile(gl, gl.FRAGMENT_SHADER, FS);
-    gl.attachShader(prog, vs); gl.attachShader(prog, fs);
-    gl.bindAttribLocation(prog, 0, "aPos");
-    gl.bindAttribLocation(prog, 1, "aNormal");
-    gl.bindAttribLocation(prog, 2, "aColor");
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.warn("KFZGL link:", gl.getProgramInfoLog(prog));
-
+    let prog = null;
     const U = {};
-    ["uMVP", "uModel", "uLightDir", "uCamPos", "uSky", "uGround", "uRim", "uAmbient", "uOpacity"]
-      .forEach((n) => U[n] = gl.getUniformLocation(prog, n));
+    function buildProgram() {
+      prog = gl.createProgram();
+      const vs = compile(gl, gl.VERTEX_SHADER, VS), fs = compile(gl, gl.FRAGMENT_SHADER, FS);
+      gl.attachShader(prog, vs); gl.attachShader(prog, fs);
+      gl.bindAttribLocation(prog, 0, "aPos");
+      gl.bindAttribLocation(prog, 1, "aNormal");
+      gl.bindAttribLocation(prog, 2, "aColor");
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.warn("KFZGL link:", gl.getProgramInfoLog(prog));
+      /* uniform locations do not survive a context loss either */
+      ["uMVP", "uModel", "uLightDir", "uCamPos", "uSky", "uGround", "uRim", "uAmbient", "uOpacity"]
+        .forEach((n) => U[n] = gl.getUniformLocation(prog, n));
+    }
+    buildProgram();
 
     const meshes = [];
     const labels = [];
@@ -264,6 +276,7 @@
     /* ---- buffers ---- */
     function upload(mesh) {
       const m = {
+        spec: mesh,                 // retained so the mesh survives a context loss
         color: mesh.color || [0.8, 0.4, 0.3],
         model: mesh.model || M4.ident(),
         opacity: mesh.opacity == null ? 1 : mesh.opacity,
@@ -282,7 +295,12 @@
       m.nrm = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, m.nrm); gl.bufferData(gl.ARRAY_BUFFER, mesh.normals, gl.STATIC_DRAW);
       m.col = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, m.col); gl.bufferData(gl.ARRAY_BUFFER, colours, gl.STATIC_DRAW);
       m.idx = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.idx);
-      const big = mesh.positions.length / 3 > 65535;
+      const needsBig = mesh.positions.length / 3 > 65535;
+      if (needsBig && !uintOK) {
+        console.warn("KFZGL: mesh needs 32-bit indices but this context has none; skipping.");
+        m.count = 0;
+      }
+      const big = needsBig && uintOK;
       m.type = big ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, big ? new Uint32Array(mesh.indices) : new Uint16Array(mesh.indices), gl.STATIC_DRAW);
       /* keep the bounds so the camera can frame the scene */
@@ -488,15 +506,27 @@
     const release = (e) => {
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinchDist = 0;
+      if (pointers.size === 1) {
+        /* re-seed the drag from the finger that is still down, or the next
+           move is interpreted as one huge jump */
+        const p = pointers.values().next().value;
+        lastX = p.x; lastY = p.y;
+      }
       if (pointers.size === 0) dragging = false;
     };
     canvas.addEventListener("pointerup", release);
     canvas.addEventListener("pointercancel", release);
 
+    /* A 16:10 stage is most of a phone screen and half a laptop one, so a
+       wheel handler that always zooms traps the reader. Zoom only on a
+       trackpad pinch (ctrlKey) or once the reader has actually clicked
+       into the model; otherwise let the page scroll past. */
     canvas.addEventListener("wheel", (e) => {
-      if (!e.ctrlKey && Math.abs(e.deltaY) < 2) return;
+      if (!e.ctrlKey && document.activeElement !== canvas) return;
       e.preventDefault();
-      cam.d = Math.max(o.minDist, Math.min(o.maxDist, cam.d * (1 + Math.sign(e.deltaY) * 0.12)));
+      const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+      const factor = Math.exp(Math.max(-1.2, Math.min(1.2, px * (e.ctrlKey ? 0.012 : 0.0022))));
+      cam.d = Math.max(o.minDist, Math.min(o.maxDist, cam.d * factor));
       kick();
     }, { passive: false });
 
@@ -525,17 +555,27 @@
       hint.innerHTML = "<span>3D paused — the graphics context was lost</span>";
     });
     canvas.addEventListener("webglcontextrestored", () => {
-      /* every GPU handle, including uniform locations, is invalid now;
-         the cheapest correct recovery for a page of static figures is
-         to rebuild from the CPU-side data we still hold */
+      /* every GPU handle is invalid now — buffers, shaders, the program
+         and even the uniform locations. Rebuild all of it from the
+         CPU-side data we deliberately kept. */
+      uintOK = isGL2 || !!gl.getExtension("OES_element_index_uint");
+      buildProgram();
+      const specs = meshes.map((m) => m.spec);
+      meshes.length = 0;
+      specs.forEach(upload);
+      hint.innerHTML = HINT_HTML;
+      needsRender = true;
+      kick();
       if (o.onRestore) o.onRestore();
     });
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+    const onVisible = () => { if (!document.hidden) kick(); };
+    document.addEventListener("visibilitychange", onVisible);
+    const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
 
     /* ---- theme changes ---- */
     const mo = new MutationObserver(kick);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", kick);
+    darkMQ.addEventListener("change", kick);
 
     resize();
     kick();
@@ -552,7 +592,19 @@
       home() { cam.d = home.d; cam.phi = home.phi; cam.theta = home.theta; kick(); },
       invalidate: kick,
       meshes,
-      dispose() { alive = false; ro.disconnect(); io.disconnect(); mo.disconnect(); clear(); },
+      dispose() {
+        alive = false;
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        ro.disconnect(); io.disconnect(); mo.disconnect();
+        document.removeEventListener("visibilitychange", onVisible);
+        darkMQ.removeEventListener("change", kick);
+        clear();
+        /* browsers cap live contexts at roughly a dozen — hand this one back */
+        const lose = gl.getExtension("WEBGL_lose_context");
+        if (lose) lose.loseContext();
+        stage.remove();
+        help.remove();
+      },
     };
   }
 
@@ -628,6 +680,15 @@
         indices.push(a, c, b, b, c, d);
       }
     }
+    if (o.caps) {
+      /* close both ends with a fan, otherwise back-face culling makes the
+         cut ends of the yarn read as holes */
+      for (let j = 1; j < rad - 1; j++) {
+        indices.push(0, j + 1, j);
+        const base = (n - 1) * rad;
+        indices.push(base, base + j, base + j + 1);
+      }
+    }
     return { positions, normals, colors, indices };
   }
 
@@ -652,7 +713,11 @@
 
     for (let i = 0; i < n; i++) {
       const s = stations[i], t = T[i];
-      let side = cross([0, 1, 0], t); normalise(side);
+      /* pick a reference axis that is not parallel to the tangent, or a
+         vertical spine (an ear, a straight collar) gives a zero-length
+         cross product and the whole ring collapses onto the centreline */
+      const ref = Math.abs(t[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+      let side = cross(ref, t); normalise(side);
       let up = cross(t, side); normalise(up);
       for (let j = 0; j < rad; j++) {
         const a = (j / rad) * Math.PI * 2;

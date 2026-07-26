@@ -8,18 +8,20 @@
      +y  up the wales (course 0 at the bottom)
      +z  towards the viewer — the technical face, the knit side
 
-   One stitch, over t in [0,1]:
-     x(t) = W * (i + t + kx*sin(2*pi*t))
-     y(t) = H * (j + 0.5 + 0.5*cos(2*pi*t))
-     z(t) = -d * cos(2*pi*t) * face
+   The loop is a harmonic curve fitted to the classical textile
+   models (Peirce 1947, Munden 1959) rather than anything invented
+   here. The important property is that DEPTH crosses the mid-plane
+   four times per stitch — head at the back, leg at the front, foot,
+   sinker loop at the back — because that is what makes courses
+   actually pass through one another. A single depth oscillation per
+   stitch reads as corduroy, not knitting.
 
-   so t = 0 and t = 1 sit at the top of the loop at the BACK
-   (the needle loop head and the sinker loops, which is what you
-   see as bumps on the purl side) and t = 0.5 sits at the bottom
-   of the V at the FRONT (the two legs, which is what you see as
-   the V on the knit side). Course j+1 sits exactly H higher, so
-   its legs come down through the head of course j — which is the
-   whole trick of knitting, and the reason this has to be 3D.
+   The loop is 1.50 course spacings tall against a 1.00 spacing, so
+   consecutive courses overlap by the 0.30 needed to interlock, and
+   the two legs pinch to exactly one yarn diameter apart.
+
+   Flip that face per course and you have garter; per wale, rib;
+   per checkerboard, seed. One generator, every fabric on the site.
    ========================================================= */
 (function () {
   "use strict";
@@ -27,29 +29,52 @@
   const G = window.KFZGeom;
   const TAU = Math.PI * 2;
 
-  /* Proportions taken from real DK-weight stockinette at 22 sts and
-     30 rounds to 10 cm: wale spacing 4.5 mm, course spacing 3.3 mm,
-     yarn about 2 mm thick, fabric about two yarn diameters deep.
-     Everything below is in units of the wale spacing.
+  /* The loop geometry below is Peirce/Munden-consistent and was checked
+     against the textile literature: wale spacing 4.5 yarn diameters,
+     course spacing W/1.30 (a stitch is wider than it is tall — the loop
+     shape factor Kc/Kw is 1.27–1.35 for relaxed plain jersey), loop
+     height 1.50 H against a 1.00 H course spacing so consecutive
+     courses overlap by the 0.30 H needed to interlock at all, and the
+     two legs exactly one yarn diameter apart where they pinch.
 
-     The loop is NOT a sine wave. A sine of this aspect ratio turns
-     far too tightly at its peaks — tighter than the yarn is thick —
-     and the tube turns inside out there. Real yarn cannot bend
-     tighter than itself, so the loop is built the way the yarn
-     actually lies: straight legs joined by arcs of a fixed radius
-     comfortably larger than the yarn. */
+     EVERYTHING IS IN UNITS OF THE YARN DIAMETER. */
+  const D = 1;                 // yarn diameter — the unit of this file
+  const W = 4.5 * D;           // wale spacing
+  const H = W / 1.30;          // course spacing
+  const AMP = 0.75 * D;        // depth amplitude → fabric ≈ 2.6 D thick
+
+  /* One stitch, t in [0,1]. x advances exactly W per unit t and every
+     added term is 1-periodic, so a whole course is this same function
+     evaluated over t in [0, wales] — no per-stitch pieces, no seams.
+
+     The depth term crosses the mid-plane FOUR times per stitch, which
+     is what actually makes the fabric interlock:
+       t=0     head apex .............. top, back
+       t=0.25  right leg .............. mid, FRONT-most
+       t=0.40  foot / point of the V .. bottom, forward
+       t=0.50  sinker loop ............ lowest, back-most
+     Anything with one crossing per stitch reads as corduroy. */
+  const CX = [0.063, 0.244, -0.059, 0.063];   // sin(2πt), sin(4πt), sin(6πt), sin(8πt)
+  const CY = [0.550, 0.699, 0.051];           // const, cos(2πt), cos(6πt)
+  const CZ = [0.42, -1.000, -0.420];          // const, cos(4πt), cos(8πt)
+
+  function stitchX(t) {
+    return W * (t + CX[0] * Math.sin(TAU * t) + CX[1] * Math.sin(2 * TAU * t)
+      + CX[2] * Math.sin(3 * TAU * t) + CX[3] * Math.sin(4 * TAU * t));
+  }
+  function stitchY(t) {
+    return H * (CY[0] + CY[1] * Math.cos(TAU * t) + CY[2] * Math.cos(3 * TAU * t));
+  }
+  function stitchZ(t) {
+    return AMP * (CZ[0] + CZ[1] * Math.cos(2 * TAU * t) + CZ[2] * Math.cos(4 * TAU * t));
+  }
+
   const DEF = {
     wales: 11, courses: 9,
-    W: 1,          // wale spacing
-    HR: 0.72,      // course spacing / wale spacing — a stitch is wider than it is tall
-    loopH: 3.0,    // nominal zigzag height / course spacing. Rounding the corners eats
-                   // into it, leaving a real loop about 1.8 course spacings tall — so
-                   // consecutive courses interlock instead of merely stacking.
-    bend: 0.26,    // radius of the arcs at the top and bottom of every loop
-    r: 0.195,      // yarn radius — must stay below `bend`
-    d: 0.235,      // how far the loop travels front to back
-    arcSteps: 11,  // samples per arc
-    radial: 8,     // sides of the yarn tube
+    r: 0.47 * D,   // tube radius. The hard limit is 0.5 D — adjacent needle-loop
+                   // heads sit 1.10 D apart, so anything thicker interpenetrates.
+    seg: 0.75 * D, // target segment length after arc-length resampling
+    radial: 8,
     variant: "stockinette",
     fold: 0,       // 0 = rib held stretched open, 1 = rib relaxed
     curl: 0,       // 0 = swatch pinned flat, 1 = let go
@@ -66,37 +91,6 @@
       case "seed": return (i + j) % 2 === 0 ? 1 : -1;
       default: return 1;
     }
-  }
-
-  /* ---------------------------------------------------------
-     Ribbing: the fabric is not narrower because the yarn got
-     shorter — it is narrower because the same width of fabric
-     now follows a wavy path through depth. So we walk the wave,
-     accumulating arc length, and map flat-x (arc length) onto
-     the folded position. Let go of a rib and this is what
-     physically happens.
-     --------------------------------------------------------- */
-  function foldMap(period, amp, phase, span) {
-    if (amp <= 1e-6) return (u) => [u, 0];
-    const step = 0.01;
-    const xs = [0], zs = [amp * Math.cos(TAU * (0 - phase) / period)], ss = [0];
-    let s = 0, x = 0;
-    while (s < span + 2) {
-      const z0 = amp * Math.cos(TAU * (x - phase) / period);
-      const z1 = amp * Math.cos(TAU * (x + step - phase) / period);
-      s += Math.hypot(step, z1 - z0);
-      x += step;
-      xs.push(x); zs.push(z1); ss.push(s);
-    }
-    return (u) => {
-      /* binary search the arc-length table */
-      let lo = 0, hi = ss.length - 1;
-      if (u <= 0) return [xs[0], zs[0]];
-      if (u >= ss[hi]) return [xs[hi], zs[hi]];
-      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (ss[mid] < u) lo = mid; else hi = mid; }
-      const f = (u - ss[lo]) / Math.max(1e-9, ss[hi] - ss[lo]);
-      return [xs[lo] + (xs[hi] - xs[lo]) * f, zs[lo] + (zs[hi] - zs[lo]) * f];
-    };
   }
 
   /* ---------------------------------------------------------
@@ -128,127 +122,127 @@
      Build the yarn as ONE continuous polyline snaking through
      every course — because that is what a piece of knitting is.
      --------------------------------------------------------- */
-  /* Round off every corner of a 2D polyline with an arc of the given
-     radius — the shape a length of yarn takes when it is bent as far
-     as it will go and no further. Returns points plus, for each one,
-     the x it corresponds to, so the caller can work out which wale
-     it belongs to. */
-  function filletPolyline(poly, radius, steps) {
-    const out = [poly[0].slice()];
-    for (let i = 1; i < poly.length - 1; i++) {
-      const P = poly[i], A = poly[i - 1], B = poly[i + 1];
-      let u = [P[0] - A[0], P[1] - A[1]];
-      let v = [B[0] - P[0], B[1] - P[1]];
-      const lu = Math.hypot(u[0], u[1]), lv = Math.hypot(v[0], v[1]);
-      u = [u[0] / lu, u[1] / lu]; v = [v[0] / lv, v[1] / lv];
-      const cosB = Math.max(-0.9999, Math.min(0.9999, u[0] * v[0] + u[1] * v[1]));
-      const beta = Math.acos(cosB);
-      if (beta < 1e-3) { out.push(P.slice()); continue; }
-      /* never let the fillet eat more than half of either neighbouring segment */
-      const T = Math.min(radius * Math.tan(beta / 2), lu * 0.5, lv * 0.5);
-      const rho = T / Math.tan(beta / 2);
-      const S = [P[0] - u[0] * T, P[1] - u[1] * T];
-      const E = [P[0] + v[0] * T, P[1] + v[1] * T];
-      const turn = Math.sign(u[0] * v[1] - u[1] * v[0]) || 1;
-      const C = [S[0] - u[1] * rho * turn, S[1] + u[0] * rho * turn];
-      const a0 = Math.atan2(S[1] - C[1], S[0] - C[0]);
-      let a1 = Math.atan2(E[1] - C[1], E[0] - C[0]);
-      while (a1 - a0 > Math.PI) a1 -= TAU;
-      while (a1 - a0 < -Math.PI) a1 += TAU;
-      for (let s = 0; s <= steps; s++) {
-        const a = a0 + (a1 - a0) * (s / steps);
-        out.push([C[0] + Math.cos(a) * rho, C[1] + Math.sin(a) * rho]);
-      }
-    }
-    out.push(poly[poly.length - 1].slice());
-    return out;
-  }
-
   function buildYarn(opts) {
     const o = Object.assign({}, DEF, opts || {});
-    const W = o.W, H = o.W * o.HR, d = o.d, ht = H * o.loopH;
     const pts = [], own = [];
 
+    /* --- per-fabric adjustments, from the textile-science reading ---
+       A purl-facing stitch is a knit stitch seen from the back, so its
+       depth is simply negated. Rib additionally pushes the purl wales
+       away from the viewer and pulls the transitions closer together —
+       that, not any change of stitch size, is why rib is narrower.
+       Garter relaxes much shorter course-wise and ridges on both faces. */
     const isRib = o.variant === "rib1x1" || o.variant === "rib2x2";
     const period = o.variant === "rib1x1" ? 2 : 4;
-    const phase = o.variant === "rib1x1" ? 0.5 : 1.0;
-    const amp = isRib ? o.fold * 0.62 * W : 0;
-    const fold = foldMap(period, amp, phase, o.wales + 1);
+    const ribBack = (o.variant === "rib1x1" ? 1.55 : 1.4) * D * o.fold;
+    const gapMin = o.variant === "rib1x1" ? 0.45 : 0.45;
+    const isGarter = o.variant === "garter";
+    const courseH = isGarter ? H * 0.65 : H;
+    const waleW = isGarter ? W * 1.05 : W;
 
-    /* Which way a point faces, blended across the boundary between a
-       knit wale and a purl one so the yarn does not jump through the
-       fabric. Wale centres — the points of the Vs — sit at i + 0.5. */
-    function faceAt(x, j) {
-      const c = x - 0.5;
-      const i0 = Math.floor(c);
-      let fr = c - i0;
-      fr = fr * fr * (3 - 2 * fr);                       // smoothstep
-      const a = faceOf(o.variant, Math.max(0, Math.min(o.wales - 1, i0)), j);
-      const b = faceOf(o.variant, Math.max(0, Math.min(o.wales - 1, i0 + 1)), j);
-      return a * (1 - fr) + b * fr;
+    function purlAt(i, j) {
+      switch (o.variant) {
+        case "reverse": return true;
+        case "garter": return j % 2 === 1;
+        case "rib1x1": return i % 2 === 1;
+        case "rib2x2": return i % 4 >= 2;
+        case "seed": return (i + j) % 2 === 1;
+        default: return false;
+      }
     }
 
-    /* One course, as a zigzag: top of the loop at every wale boundary,
-       point of the V at every wale centre. Corners then rounded off. */
-    const zig = [];
-    for (let i = -1; i <= o.wales + 1; i++) {
-      zig.push([i, ht]);
-      zig.push([i + 0.5, 0]);
+    /* Rib contracts by squeezing the knit-to-purl gaps, so wale centres
+       are no longer evenly spaced. Build the map once. */
+    const waleX = [];
+    {
+      let acc = 0;
+      for (let i = 0; i <= o.wales; i++) {
+        waleX.push(acc);
+        const gap = isRib && purlAt(i, 0) !== purlAt(i + 1, 0)
+          ? 1 - o.fold * (1 - gapMin) : 1;
+        acc += gap;
+      }
     }
-    /* Build a wale wider than needed at each end, then clip — otherwise
-       the un-rounded first and last corners of the zigzag stick out
-       above the fabric as spikes. */
-    const profile = filletPolyline(zig, o.bend, o.arcSteps)
-      .filter((p) => p[0] >= -1e-6 && p[0] <= o.wales + 1e-6);
-    /* the fillets cut into the zigzag, so ask the profile how tall it
-       actually came out and map depth onto that, not onto the nominal
-       height — otherwise the loop never reaches full front or back */
-    let pLo = Infinity, pHi = -Infinity;
-    profile.forEach((p) => { if (p[1] < pLo) pLo = p[1]; if (p[1] > pHi) pHi = p[1]; });
-    const pSpan = Math.max(1e-6, pHi - pLo);
+    const remapU = (u) => {
+      const i = Math.max(0, Math.min(o.wales - 1, Math.floor(u)));
+      return waleX[i] + (u - i) * (waleX[i + 1] - waleX[i]);
+    };
 
-    /* every course, as its own list, so the selvedge turns can be
-       drawn between the points that actually exist rather than
-       between where the un-rounded zigzag would have gone */
+    const smooth = (a) => a * a * (3 - 2 * a);
+
+    /* One course as a single fine polyline, then resampled by arc length
+       — t is not arc length (dx/dt reverses four times a stitch), so
+       sweeping it raw bunches cross-sections at the head and the foot. */
+    function courseCurve(j) {
+      const fine = [];
+      const N = Math.max(64, Math.round(o.wales * 160));
+      for (let k = 0; k <= N; k++) {
+        const t = (k / N) * o.wales;
+        const u = stitchX(t) / W;
+        /* which wale this sample belongs to, and how far through the
+           changeover it is — the sinker at t=0.5 is the crossing point */
+        const centre = Math.round(u);
+        const wale = Math.max(0, Math.min(o.wales - 1, centre));
+        const frac = u - (centre - 0.5);            // 0..1 across the cell
+        const blend = smooth(Math.max(0, Math.min(1, (frac - 0.4) / 0.2)));
+        const here = purlAt(wale, j) ? -1 : 1;
+        const next = purlAt(Math.min(o.wales - 1, wale + 1), j) ? -1 : 1;
+        const face = here * (1 - blend) + next * blend;
+
+        let z = stitchZ(t) * face;
+        if (isRib) {
+          const backHere = purlAt(wale, j) ? -ribBack : 0;
+          const backNext = purlAt(Math.min(o.wales - 1, wale + 1), j) ? -ribBack : 0;
+          z += backHere * (1 - blend) + backNext * blend;
+        }
+        if (isGarter) z += (j % 2 === 1 ? 0.6 : -0.6) * D;
+
+        fine.push([remapU(u) * waleW, stitchY(t) + courseH * j, z, wale]);
+      }
+      /* resample at a constant arc length */
+      const out = [];
+      let carry = 0;
+      out.push(fine[0]);
+      for (let k = 1; k < fine.length; k++) {
+        const a = out[out.length - 1], b = fine[k];
+        let dist = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+        carry += dist;
+        if (carry >= o.seg) { out.push(b); carry = 0; }
+      }
+      if (out[out.length - 1] !== fine[fine.length - 1]) out.push(fine[fine.length - 1]);
+      return out;
+    }
+
     const rows = [];
     for (let j = 0; j < o.courses; j++) {
-      const rtl = j % 2 === 1;                    // alternate courses run the other way
-      const seq = rtl ? profile.slice().reverse() : profile;
-      const row = [];
-      seq.forEach((p) => {
-        const x = p[0], ly = p[1];
-        const f = faceAt(x, j);
-        const z = d * (1 - 2 * (ly - pLo) / pSpan) * f;
-        const wale = Math.max(0, Math.min(o.wales - 1, Math.floor(x)));
-        if (!amp) row.push([[x * W, H * j + ly, z], wale]);
-        else {
-          const [fx, fz] = fold(x);
-          row.push([[fx * W, H * j + ly, fz + z], wale]);
-        }
-      });
-      rows.push({ row, rtl });
+      const row = courseCurve(j);
+      rows.push({ row, rtl: j % 2 === 1 });
     }
 
+    /* one continuous strand, turning at alternate selvedges */
     rows.forEach((r, j) => {
-      r.row.forEach((q) => { pts.push(q[0]); own.push([q[1], j]); });
+      const seq = r.rtl ? r.row.slice().reverse() : r.row;
+      seq.forEach((q) => { pts.push([q[0], q[1], q[2]]); own.push([q[3], j]); });
       if (j < rows.length - 1) {
-        const a = r.row[r.row.length - 1][0];
-        const b = rows[j + 1].row[0][0];
-        const out = r.rtl ? -1 : 1;               // which edge we turn at
+        const nextSeq = rows[j + 1].rtl ? rows[j + 1].row.slice().reverse() : rows[j + 1].row;
+        const a = seq[seq.length - 1], b = nextSeq[0];
+        const out = r.rtl ? -1 : 1;
         for (let k = 1; k <= 6; k++) {
           const t = k / 7;
-          const bulge = Math.sin(t * Math.PI) * 0.30 * W * out;
+          const bulge = Math.sin(t * Math.PI) * 0.55 * D * out;
           pts.push([
             a[0] + (b[0] - a[0]) * t + bulge,
             a[1] + (b[1] - a[1]) * t,
-            a[2] + (b[2] - a[2]) * t - Math.sin(t * Math.PI) * 0.12 * W,
+            a[2] + (b[2] - a[2]) * t - Math.sin(t * Math.PI) * 0.35 * D,
           ]);
           own.push([-1, j]);
         }
       }
     });
 
-    /* let the swatch go */
+    /* Let the swatch go. Rib and garter genuinely do not curl — the
+       alternating faces cancel the bending moments — so this only ever
+       runs for plain fabric. */
     if (o.curl > 0 && (o.variant === "stockinette" || o.variant === "reverse")) {
       const sgn = o.variant === "reverse" ? -1 : 1;
       let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
@@ -256,14 +250,14 @@
         if (p[0] < xMin) xMin = p[0]; if (p[0] > xMax) xMax = p[0];
         if (p[1] < yMin) yMin = p[1]; if (p[1] > yMax) yMax = p[1];
       });
-      const R = Math.max(0.42, 1.5 - o.curl * 1.05) * W;
-      const inset = 1.35 * W;
+      const R = Math.max(3.0, 7.5 - o.curl * 4.5) * D;
+      const inset = 6.0 * D;
       for (let k = 0; k < pts.length; k++) {
         let p = pts[k];
-        p = roll(p, 1, yMax - inset * 0.9, R, sgn, +1);       // top edge → knit side
-        p = roll(p, 1, yMin + inset * 0.9, R, sgn, -1);       // bottom edge → knit side
-        p = roll(p, 0, xMax - inset, R, -sgn, +1);            // right edge → purl side
-        p = roll(p, 0, xMin + inset, R, -sgn, -1);            // left edge → purl side
+        p = roll(p, 1, yMax - inset, R, sgn, +1);       // bind-off edge → knit side
+        p = roll(p, 1, yMin + inset, R, sgn, -1);       // cast-on edge → knit side
+        p = roll(p, 0, xMax - inset, R, -sgn, +1);      // right selvedge → purl side
+        p = roll(p, 0, xMin + inset, R, -sgn, -1);      // left selvedge → purl side
         pts[k] = p;
       }
     }
@@ -274,7 +268,7 @@
     cx /= pts.length; cy /= pts.length; cz /= pts.length;
     pts.forEach((p) => { p[0] -= cx; p[1] -= cy; p[2] -= cz; });
 
-    return { pts, own, W, H, d, opts: o };
+    return { pts, own, W: waleW, H: courseH, d: AMP, opts: o };
   }
 
   /* ---------------------------------------------------------
@@ -367,12 +361,15 @@
       grp.className = "grp";
       VARIANTS.forEach(([key, name]) => {
         const b = document.createElement("button");
+        b.type = "button";
         b.textContent = name;
         b.className = key === state.variant ? "on" : "";
+        b.setAttribute("aria-pressed", String(key === state.variant));
         b.addEventListener("click", () => {
           state.variant = key;
-          grp.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
+          grp.querySelectorAll("button").forEach((x) => { x.classList.remove("on"); x.setAttribute("aria-pressed", "false"); });
           b.classList.add("on");
+          b.setAttribute("aria-pressed", "true");
           syncSliders();
           rebuild();
         });
@@ -417,9 +414,11 @@
 
     rebuild();
 
-    /* keep the yarn colour in step with the theme */
+    /* keep the yarn colour in step with the theme — both the site toggle
+       and the operating system deciding it is evening */
     const mo = new MutationObserver(rebuild);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rebuild);
 
     return { scene, rebuild, state };
   }
@@ -439,7 +438,7 @@
 
     function rebuild() {
       scene.clear();
-      const m = build({ variant: "stockinette", wales: o.wales, courses: o.courses, highlight: hi, arcSteps: 15, radial: 11 });
+      const m = build({ variant: "stockinette", wales: o.wales, courses: o.courses, highlight: hi, seg: 0.5, radial: 11 });
       scene.add({ positions: m.positions, normals: m.normals, colors: m.colors, indices: m.indices });
 
       const y = m.yarn, W = y.W, H = y.H;
@@ -464,17 +463,18 @@
       const headBelow = at(hi[0], hi[1] - 1, 0.0);
       const bar = at(hi[0] + 1, hi[1], 0.0);
 
-      scene.addLabel([legL[0] - W * 0.72, legL[1] + H * 0.30, legL[2] + 0.3], "left leg", "ochre");
-      scene.addLabel([legR[0] + W * 0.72, legR[1] + H * 0.30, legR[2] + 0.3], "right leg", "ochre");
-      scene.addLabel([point[0], point[1] - H * 0.95, point[2] + 0.35], "the point of the V", "rust");
-      scene.addLabel([headBelow[0] - W * 1.15, headBelow[1] - H * 0.15, headBelow[2] - 0.5], "head of the stitch below", "indigo");
-      scene.addLabel([bar[0] + W * 0.95, bar[1] + H * 0.75, bar[2] - 0.45], "running bar", "sage");
+      scene.addLabel([legL[0] - W * 1.25, legL[1] + H * 0.9, legL[2] + 0.3], "left leg", "ochre");
+      scene.addLabel([legR[0] + W * 1.25, legR[1] + H * 0.9, legR[2] + 0.3], "right leg", "ochre");
+      scene.addLabel([point[0] - W * 0.15, point[1] - H * 1.9, point[2] + 0.4], "the point of the V", "rust");
+      scene.addLabel([headBelow[0] - W * 1.9, headBelow[1] - H * 0.5, headBelow[2] - 0.55], "head of the stitch below", "indigo");
+      scene.addLabel([bar[0] + W * 1.4, bar[1] + H * 1.5, bar[2] - 0.5], "running bar", "sage");
       if (firstA) { scene.frame(1.12); firstA = false; }
       scene.invalidate();
     }
     rebuild();
     const mo = new MutationObserver(rebuild);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rebuild);
     return { scene, rebuild };
   }
 

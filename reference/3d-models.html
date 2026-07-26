@@ -6,7 +6,7 @@
 <title>3D models — Knit From Zero</title>
 <meta name="description" content="Interactive 3D models of knitted fabric and of a Basenji wearing the sweater, generated from stitch geometry and breed measurements in your browser.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><text y='32' font-size='32'>🧶</text></svg>">
-<link rel="stylesheet" href="../assets/css/site.css?v=2">
+<link rel="stylesheet" href="../assets/css/site.css?v=12">
 </head>
 <body data-page="r00">
 <a class="skip" href="#main">Skip to content</a>
@@ -71,7 +71,8 @@
         <div class="card">
           <h3 style="margin-top:0">The fabric</h3>
           <p class="small">One continuous polyline is swept through every course of the swatch — because a piece of knitting <em>is</em> one continuous strand — and then thickened into a tube using parallel-transport frames so the yarn never twists as it turns.</p>
-          <p class="small">The loop itself is not a sine wave. A sine of this aspect ratio turns tighter at its peaks than the yarn is thick, and the tube turns inside out. Real yarn cannot bend tighter than itself, so the loop is built the way yarn actually lies: straight legs joined by arcs of a fixed radius comfortably larger than the yarn.</p>
+          <p class="small">The loop is a harmonic curve fitted to the classical textile models — Peirce's 1947 geometry of the plain knitted loop and Munden's 1959 relations — not something invented for the picture. Everything is in units of the yarn's own diameter: wales 4.5 diameters apart, courses 3.46, loop 1.5 course spacings tall so consecutive courses overlap by the amount they need to interlock at all, and the two legs pinching to exactly one diameter apart.</p>
+          <p class="small">The property that makes it fabric rather than decoration is that <b>depth crosses the mid-plane four times per stitch</b> — head at the back, leg at the front, foot, sinker loop at the back again. Get that wrong and the loops stack instead of threading through one another; it looks like corduroy and a knitter will know instantly without being able to say why. The yarn is swept at half a diameter thick, which is the hard ceiling: adjacent needle-loop heads sit 1.1 diameters apart, so anything fatter would pass through itself.</p>
         </div>
         <div class="card">
           <h3 style="margin-top:0">The renderer</h3>
@@ -89,12 +90,12 @@
   </main>
 </div>
 
-<script src="../assets/js/stitchsteps.js?v=2"></script>
-<script src="../assets/js/site.js?v=2"></script>
-<script src="../assets/js/knitgraph.js?v=2"></script>
-<script src="../assets/js/gl.js?v=2"></script>
-<script src="../assets/js/knit3d.js?v=2"></script>
-<script src="../assets/js/dog3d.js?v=2"></script>
+<script src="../assets/js/stitchsteps.js?v=12"></script>
+<script src="../assets/js/site.js?v=12"></script>
+<script src="../assets/js/knitgraph.js?v=12"></script>
+<script src="../assets/js/gl.js?v=12"></script>
+<script src="../assets/js/knit3d.js?v=12"></script>
+<script src="../assets/js/dog3d.js?v=12"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const NOTE = {

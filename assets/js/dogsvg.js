@@ -200,9 +200,9 @@
 
     /* ---- measuring lines ---- */
     const M = {
-      neck: { d: "M 170 108 C 200 96, 224 118, 214 152 C 200 176, 168 168, 164 140 C 162 124, 164 114, 170 108 Z", label: "A · Neck", lx: 150, ly: 96, anchor: "end" },
-      chest: { d: "M 250 138 C 292 130, 300 200, 282 258 C 264 300, 220 300, 210 254 C 200 202, 216 146, 250 138 Z", label: "B · Chest girth", lx: 300, ly: 122, anchor: "start" },
-      waist: { d: "M 372 146 C 404 142, 408 200, 392 240 C 378 268, 344 266, 340 232 C 336 196, 346 152, 372 146 Z", label: "D · Waist girth", lx: 420, ly: 132, anchor: "start" },
+      neck: { d: "M 170 108 C 200 96, 224 118, 214 152 C 200 176, 168 168, 164 140 C 162 124, 164 114, 170 108 Z", label: "A · Neck", lx: 28, ly: 200, anchor: "start" },
+      chest: { d: "M 250 138 C 292 130, 300 200, 282 258 C 264 300, 220 300, 210 254 C 200 202, 216 146, 250 138 Z", label: "B · Chest girth", lx: 236, ly: 336, anchor: "middle" },
+      waist: { d: "M 372 146 C 404 142, 408 200, 392 240 C 378 268, 344 266, 340 232 C 336 196, 346 152, 372 146 Z", label: "D · Waist girth", lx: 424, ly: 158, anchor: "start" },
     };
     o.measures.forEach((m) => {
       if (M[m]) {
@@ -214,11 +214,11 @@
           d: "M 214 128 C 260 116, 340 112, 434 128", fill: "none",
           stroke: "var(--indigo)", "stroke-width": 3, "marker-start": "url(#kfz-dim)", "marker-end": "url(#kfz-dim)",
         }));
-        svg.appendChild(el("text", { x: 324, y: 104, "font-size": 17, "font-family": "var(--mono)", "font-weight": 600, fill: "var(--indigo)", "text-anchor": "middle" }, "C · Back length"));
+        svg.appendChild(el("text", { x: 324, y: 92, "font-size": 17, "font-family": "var(--mono)", "font-weight": 600, fill: "var(--indigo)", "text-anchor": "middle" }, "C · Back length"));
       }
       if (m === "leg") {
         svg.appendChild(el("path", { d: "M 226 254 m -26 0 a 26 15 0 1 0 52 0 a 26 15 0 1 0 -52 0", fill: "none", stroke: "var(--rust)", "stroke-width": 3, "stroke-dasharray": "8 6" }));
-        svg.appendChild(el("text", { x: 226, y: 316, "font-size": 16, "font-family": "var(--mono)", "font-weight": 600, fill: "var(--rust)", "text-anchor": "middle" }, "E · Front leg"));
+        svg.appendChild(el("text", { x: 104, y: 268, "font-size": 16, "font-family": "var(--mono)", "font-weight": 600, fill: "var(--rust)", "text-anchor": "middle" }, "E · Front leg"));
       }
     });
 

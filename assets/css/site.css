@@ -567,6 +567,7 @@ input[type="range"] { width: 100%; accent-color: var(--rust); }
 /* ---------- print ---------- */
 @media print {
   .site-header, .sidebar, .pager, .site-footer, .no-print { display: none !important; }
+  .gl-stage, .gl-controls, .gl-readout, .gl-nudge { display: none !important; }
   body { background: #fff; color: #000; font-size: 11pt; }
   .card, .pattern-out, figure.diagram { box-shadow: none; border-color: #999; break-inside: avoid; }
   .shell { display: block; max-width: none; }

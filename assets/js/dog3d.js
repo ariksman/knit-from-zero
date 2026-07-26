@@ -336,7 +336,7 @@
     if (!scene) return null;
 
     const state = { sweater: o.sweater, coloured: o.coloured, measures: o.measures };
-    let legend;
+    let legend, framed = false;
 
     function rebuild() {
       scene.clear();
@@ -358,7 +358,7 @@
       }
 
       if (state.measures) {
-        const ring = (x, colour, text) => {
+        const ring = (x, colour, text, lift, side) => {
           const t = torsoAt(x);
           const pts = [];
           for (let k = 0; k <= 64; k++) {
@@ -368,17 +368,19 @@
           const m = G.tube(pts, 0.007, 6);
           m.color = colour;
           scene.add({ positions: m.positions, normals: m.normals, indices: m.indices, color: colour });
-          scene.addLabel([x, t.cy + t.ry + 0.09, 0], text, colour === MEAS_B ? "indigo" : "sage");
+          scene.addLabel([x, t.cy + t.ry + lift, side], text, colour === MEAS_B ? "indigo" : "sage");
         };
-        ring(0.115, MEAS_A, "A · neck");
-        ring(0.300, MEAS_B, "B · chest girth");
-        ring(0.700, MEAS_A, "D · waist");
-        scene.addLabel([0.19, 1.09, 0], "C · back length", "indigo");
-        scene.addLabel([0.925, 1.03, 0.09], "tail stays free", "ochre");
+        /* stagger the heights, or they stack on top of each other head-on */
+        ring(0.115, MEAS_A, "A · neck", 0.30, -0.34);
+        ring(0.300, MEAS_B, "B · chest girth", 0.06, 0.36);
+        ring(0.700, MEAS_A, "D · waist", 0.26, -0.36);
+        scene.addLabel([0.46, 1.27, 0], "C · back length", "indigo");
+        scene.addLabel([1.14, 0.84, 0.14], "tail stays free", "ochre");
       }
 
-      scene.frame(1.02);
-      scene.cam.target[1] += 0.02;
+      /* frame once only — re-framing on every toggle would throw away a
+         zoom the reader deliberately set */
+      if (!framed) { scene.frame(1.02); scene.cam.target[1] += 0.02; framed = true; }
       if (legend) {
         legend.innerHTML = state.sweater && state.coloured
           ? SECTIONS.filter((s, i) => i > 0).map((s) =>
@@ -397,15 +399,18 @@
       grp.className = "grp";
       const mk = (text, on, fn) => {
         const b = document.createElement("button");
+        b.type = "button";
         b.textContent = text;
-        if (on) b.classList.add("on");
+        b.classList.toggle("on", !!on);
+        b.setAttribute("aria-pressed", String(!!on));
         b.addEventListener("click", () => { fn(b); rebuild(); });
         grp.appendChild(b);
         return b;
       };
-      mk("Sweater on", state.sweater, (b) => { state.sweater = !state.sweater; b.classList.toggle("on", state.sweater); b.textContent = state.sweater ? "Sweater on" : "Sweater off"; });
-      mk("Pattern sections", state.coloured, (b) => { state.coloured = !state.coloured; b.classList.toggle("on", state.coloured); });
-      mk("Measuring rings", state.measures, (b) => { state.measures = !state.measures; b.classList.toggle("on", state.measures); });
+      const press = (b, on) => { b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); };
+      mk("Sweater on", state.sweater, (b) => { state.sweater = !state.sweater; press(b, state.sweater); b.textContent = state.sweater ? "Sweater on" : "Sweater off"; });
+      mk("Pattern sections", state.coloured, (b) => { state.coloured = !state.coloured; press(b, state.coloured); });
+      mk("Measuring rings", state.measures, (b) => { state.measures = !state.measures; press(b, state.measures); });
       bar.appendChild(grp);
       const reset = document.createElement("button");
       reset.textContent = "Reset view";
@@ -422,6 +427,7 @@
     }
 
     rebuild();
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rebuild);
     return { scene, rebuild, state };
   }
 
